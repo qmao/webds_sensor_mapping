@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import { styled } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import {
     Button,
     FormControlLabel,
@@ -62,7 +63,7 @@ const SCHEME_DEFAULT = [
 const XDEFAULT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 const YDEFAULT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-export default function MainWidget() {
+export default function MainWidget(props: any) {
     const [xdir, setXdir] = useState<number[]>(XDEFAULT);
     const [ydir, setYdir] = useState<number[]>(YDEFAULT);
 
@@ -528,7 +529,12 @@ export default function MainWidget() {
             </Stack>
         );
     }
+
+    const webdsTheme = props.service.ui.getWebDSTheme();
+
     return (
+        <div className='jp-webds-widget-body'>
+            <ThemeProvider theme={webdsTheme}>
         <Stack direction="row">
             {disaplyPanel()}
 
@@ -544,6 +550,8 @@ export default function MainWidget() {
 
                 {displaySingleBankingScheme()}
             </Stack>
-        </Stack>
+                </Stack>
+            </ThemeProvider>
+                </div>
     );
 }

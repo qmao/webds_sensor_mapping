@@ -26,6 +26,6 @@ export class ShellWidget extends ReactWidget {
     }
 
     render(): JSX.Element {
-        return <MainWidget/>;
+        return <MainWidget service={this.service}/>;
     }
 }
