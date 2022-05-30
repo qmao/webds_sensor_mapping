@@ -1,0 +1,8 @@
+{
+  "jupyter.lab.shortcuts": [],
+  "title": "webds_sensor_mapping",
+  "description": "webds_sensor_mapping settings.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
