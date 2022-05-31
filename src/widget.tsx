@@ -12,7 +12,8 @@ import {
     RadioGroup,
     Slider,
     SvgIcon,
-    TextField
+    TextField,
+    IconButton
 } from "@mui/material";
 
 import InputLabel from "@mui/material/InputLabel";
@@ -27,7 +28,9 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 ///import { extensionAxisIcon } from './icons';
 import { Axis } from "./axis";
-//import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from '@mui/icons-material/Add';
+
 
 const LENGTH = 18;
 const LENGTHPX = "18px";
@@ -43,36 +46,6 @@ const Item = styled(Paper)(({ theme }) => ({
 const DEFAULT_RANGE_MIN = 20;
 const DEFAULT_RANGE_MAX = 40;
 
-const SCHEME_DEFAULT = [
-    {
-        "TX-AXIS": [
-            { name: "TX", range: [0, 7] },
-            { name: "U", range: [50, 59] }
-        ],
-        "RX-AXIS": [{ name: "RX", range: [8, 49] }]
-    },
-    {
-        "TX-AXIS": [
-            { name: "TX", range: [0, 9] },
-            { name: "U", range: [50, 59] }
-        ],
-        "RX-AXIS": [{ name: "RX", range: [10, 49] }]
-    },
-    {
-        "TX-AXIS": [{ name: "TX", range: [22, 39] }],
-        "RX-AXIS": [
-            { name: "RX", range: [0, 21] },
-            { name: "U", range: [40, 59] }
-        ]
-    },
-    {
-        "TX-AXIS": [{ name: "TX", range: [20, 39] }],
-        "RX-AXIS": [
-            { name: "RX", range: [0, 19] },
-            { name: "U", range: [40, 59] }
-        ]
-    }
-];
 
 const XDEFAULT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 const YDEFAULT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -102,9 +75,10 @@ export default function MainWidget(props: any) {
     const [schemeErr, setSchemeErr] = useState(true);
 
     useEffect(() => {
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        console.log(props.settings);
-        setBankingScheme(SCHEME_DEFAULT);
+        if (props.settings != null) {
+            var bsSettings = props.settings.composite['bankingScheme'];
+            setBankingScheme(bsSettings);
+        }
     }, []);
 
     useEffect(() => {
@@ -211,6 +185,13 @@ export default function MainWidget(props: any) {
             temp.push(item);
             setSingleScheme(temp);
         }
+    };
+
+    const handleDeleteBankingScheme = (index: number) => {
+        var tempBanking = [];
+        Object.assign(tempBanking, bankingScheme);
+        tempBanking.splice(index, 1);
+        setBankingScheme(tempBanking);
     };
 
     const handleOpenAdd = (
@@ -329,14 +310,28 @@ export default function MainWidget(props: any) {
                     onChange={handleSelectBankingScheme}
                 >
                     {blist.map((value, index) => (
+                        <Stack direction="row" justifyContent="space-between">
                         <FormControlLabel
                             key={`radio-${index}`}
                             value={index}
                             control={<Radio />}
                             label={value}
                         />
+                            <IconButton
+                                aria-label="delete"
+                                onClick={() => handleDeleteBankingScheme(index)}
+                            >
+                                <RemoveIcon />
+                            </IconButton>
+                            </Stack>
                     ))}
                 </RadioGroup>
+
+                <Stack direction="row" justifyContent="flex-end">
+                    <IconButton aria-label="delete" onClick={handleOpenNewBankingScheme}>
+                        <AddIcon />
+                    </IconButton>
+                </Stack>
             </FormControl>
         );
     }
@@ -449,7 +444,7 @@ export default function MainWidget(props: any) {
     function displaySingleBankingScheme() {
         return (
             <Dialog open={openAdd}>
-                <DialogTitle>{isTxAxis ? "x-axis" : "y-axis"}</DialogTitle>
+                <DialogTitle>{isTxAxis ? "Tx-Axis" : "RX-Axis"}</DialogTitle>
                 <DialogContent sx={{ width: 400 }}>
                     <Stack
                         direction="row"
@@ -573,9 +568,6 @@ export default function MainWidget(props: any) {
 
                         {showBankingSchemeList()}
 
-                        <Button onClick={handleOpenNewBankingScheme}>
-                            Add Banking Scheme
-            </Button>
                         <Button onClick={handleApplyBankingScheme}>Apply</Button>
 
                         {displayNewBankingScheme()}

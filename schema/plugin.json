@@ -1,8 +1,54 @@
 {
+  "title": "TX/RX Sensor Mapping",
+  "description": "TX/RX Sensor Mapping.",
   "jupyter.lab.shortcuts": [],
-  "title": "webds_sensor_mapping",
-  "description": "webds_sensor_mapping settings.",
-  "type": "object",
-  "properties": {},
-  "additionalProperties": false
+  "properties": {
+    "bankingScheme": {
+      "title": "Banking Scheme",
+      "description": "User banking scheme.",
+      "default": [
+      {
+        "TX-AXIS": [
+          { "name": "TX", "range": [0, 7] },
+          { "name": "U", "range": [50, 59] }
+        ],
+        "RX-AXIS": [
+          { "name": "RX", "range": [8, 49] }
+        ]
+      },
+      {
+        "TX-AXIS": [
+          { "name": "TX", "range": [0, 9] },
+          { "name": "U", "range": [50, 59] }
+         ],
+         "RX-AXIS": [
+           { "name": "RX", "range": [10, 49] }
+         ]
+      },
+      {
+        "TX-AXIS": [
+          { "name": "TX", "range": [22, 39] }
+        ],
+        "RX-AXIS": [
+          { "name": "RX", "range": [0, 21] },
+          { "name": "U", "range": [40, 59] }
+        ]
+      },
+      {
+        "TX-AXIS": [
+          { "name": "TX", "range": [20, 39] }
+        ],
+        "RX-AXIS": [
+          { "name": "RX", "range": [0, 19] },
+          { "name": "U", "range": [40, 59] }
+        ]
+      }
+    ],
+     "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "type": "object"
 }
