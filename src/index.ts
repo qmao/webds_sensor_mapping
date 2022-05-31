@@ -40,16 +40,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     settingRegistry: ISettingRegistry | null) => {
     console.log('JupyterLab extension webds_sensor_mapping is activated!');
 
-	let settings: ISettingRegistry.ISettings | undefined = undefined;
-
-    if (settingRegistry) {
-      try {
-        settings = await settingRegistry.load(plugin.id);
-      } catch (reason) {
-        console.log(`Failed to load settings for ${plugin.id}\n${reason}`);
-      }
-    }
-
     let widget: MainAreaWidget;
     const { commands, shell } = app;
     const command = CommandIDs.sensor_mapping;
@@ -63,7 +53,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 	  icon: extensionSensorMappingIcon,
       execute: () => {
         if (!widget || widget.isDisposed) {
-          let content = new ShellWidget(service, settings, settingRegistry);
+          let content = new ShellWidget(service, settingRegistry);
 
           widget = new MainAreaWidget<ShellWidget>({ content });
           widget.id = 'sensor_mapping';

@@ -12,17 +12,15 @@ import { ISettingRegistry } from '@jupyterlab/settingregistry';
 */
 export class ShellWidget extends ReactWidget {
     _service: WebDSService;
-    _settings: ISettingRegistry.ISettings | null = null;
-    _settingsRegistry: ISettingRegistry | null = null;
+    _settingRegistry: ISettingRegistry | null = null;
     /**
     * Constructs a new CounterWidget.
     */
-    constructor(service: WebDSService, settings?: ISettingRegistry.ISettings, settingsRegistry?: ISettingRegistry) {
+    constructor(service: WebDSService, settingRegistry?: ISettingRegistry) {
         super();
         this.addClass('jp-webds-widget');
         this._service = service;
-        this._settings = settings || null;
-        this._settingsRegistry = settingsRegistry || null;
+        this._settingRegistry = settingRegistry || null;
         console.log("TabPanelUiWidget is created!!!");
     }
 
@@ -31,6 +29,6 @@ export class ShellWidget extends ReactWidget {
     }
 
     render(): JSX.Element {
-        return <MainWidget service={this._service} settings={this._settings} settingsRegistry={this._settingsRegistry}/>;
+        return <MainWidget service={this._service} settingRegistry={this._settingRegistry}/>;
     }
 }

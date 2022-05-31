@@ -76,9 +76,7 @@ export default function MainWidget(props: any) {
     const [schemeErr, setSchemeErr] = useState(true);
 
     useEffect(() => {
-        var settingRegistry: ISettingRegistry = props.settingsRegistry;
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        console.log(settingRegistry);
+        var settingRegistry: ISettingRegistry = props.settingRegistry;
 
         async function load() {
             if (settingRegistry) {
@@ -87,7 +85,7 @@ export default function MainWidget(props: any) {
                     var settings = await settingRegistry.load(id);
 
                     if (settings != null) {
-                        var bsSettings = props.settings.composite['bankingScheme'];
+                        var bsSettings = settings.composite['bankingScheme'] as object[];
                         setBankingScheme(bsSettings);
                     }
 
@@ -171,13 +169,12 @@ export default function MainWidget(props: any) {
 
     const handleApplyBankingScheme = () => {
 
-        var settingRegistry: ISettingRegistry = props.settingsRegistry;
+        var settingRegistry: ISettingRegistry = props.settingRegistry;
         async function set() {
             if (settingRegistry) {
                 try {
                     var id = '@webds/sensor_mapping:plugin';
-                    var ret = await settingRegistry.set(id, 'bankingScheme', bankingScheme);
-                    console.log(ret);
+                    await settingRegistry.set(id, 'bankingScheme', bankingScheme);
                 } catch (reason) {
                     console.log(`Failed to set settings for ${id}\n${reason}`);
                 }
