@@ -63,7 +63,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 	  icon: extensionSensorMappingIcon,
       execute: () => {
         if (!widget || widget.isDisposed) {
-          let content = new ShellWidget(service, settings);
+          let content = new ShellWidget(service, settings, settingRegistry);
 
           widget = new MainAreaWidget<ShellWidget>({ content });
           widget.id = 'sensor_mapping';

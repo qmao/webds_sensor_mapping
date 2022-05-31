@@ -30,6 +30,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { Axis } from "./axis";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from '@mui/icons-material/Add';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 
 const LENGTH = 18;
@@ -75,10 +76,28 @@ export default function MainWidget(props: any) {
     const [schemeErr, setSchemeErr] = useState(true);
 
     useEffect(() => {
-        if (props.settings != null) {
-            var bsSettings = props.settings.composite['bankingScheme'];
-            setBankingScheme(bsSettings);
+        var settingRegistry: ISettingRegistry = props.settingsRegistry;
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        console.log(settingRegistry);
+
+        async function load() {
+            if (settingRegistry) {
+                try {
+                    var id = '@webds/sensor_mapping:plugin';
+                    var settings = await settingRegistry.load(id);
+
+                    if (settings != null) {
+                        var bsSettings = props.settings.composite['bankingScheme'];
+                        setBankingScheme(bsSettings);
+                    }
+
+                } catch (reason) {
+                    console.log(`Failed to load settings for ${id}\n${reason}`);
+                }
+            }
         }
+
+        load();
     }, []);
 
     useEffect(() => {
@@ -151,6 +170,22 @@ export default function MainWidget(props: any) {
     };
 
     const handleApplyBankingScheme = () => {
+
+        var settingRegistry: ISettingRegistry = props.settingsRegistry;
+        async function set() {
+            if (settingRegistry) {
+                try {
+                    var id = '@webds/sensor_mapping:plugin';
+                    var ret = await settingRegistry.set(id, 'bankingScheme', bankingScheme);
+                    console.log(ret);
+                } catch (reason) {
+                    console.log(`Failed to set settings for ${id}\n${reason}`);
+                }
+            }
+        }
+        set();
+
+
         console.log("APPLY");
     };
 
