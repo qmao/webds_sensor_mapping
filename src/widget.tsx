@@ -25,9 +25,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-
-//////import { ReactComponent as Logo } from "./axis.svg";
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+///import { extensionAxisIcon } from './icons';
+import { Axis } from "./axis";
 
 const LENGTH = 18;
 const LENGTHPX = "18px";
@@ -46,18 +45,36 @@ const DEFAULT_RANGE_MAX = 40;
 const SCHEME_DEFAULT = [
     {
         X: [
-            { name: "TX", range: [10, 20] },
-            { name: "U", range: [10, 20] }
+            { name: "TX", range: [0, 7] },
+            { name: "U", range: [50, 59] }
         ],
-        Y: [{ name: "RX", range: [10, 20] }]
+        Y: [{ name: "RX", range: [8, 49] }]
     },
     {
         X: [
-            { name: "TX", range: [7, 20] },
-            { name: "U", range: [20, 30] }
+            { name: "TX", range: [0, 9] },
+            { name: "U", range: [50, 59] }
         ],
-        Y: [{ name: "RX", range: [10, 20] }]
-    }
+        Y: [{ name: "RX", range: [10, 49] }]
+    },
+    {
+        X: [
+            { name: "TX", range: [22, 39] }
+        ],
+        Y: [
+            { name: "RX", range: [0, 21] },
+            { name: "U", range: [40, 59] }
+        ]
+    },
+    {
+        X: [
+            { name: "TX", range: [20, 39] }
+        ],
+        Y: [
+            { name: "RX", range: [0, 19] },
+            { name: "U", range: [40, 59] }
+        ]
+    },
 ];
 
 const XDEFAULT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -279,11 +296,7 @@ export default function MainWidget(props: any) {
         });
 
         bankingScheme[index]["Y"].forEach(function (item) {
-            var start = item["range"][0];
-            var end = item["range"][1];
-            var len = end - start + 1;
-            var nlist = Array.from({ length: len }, (_, i) => i + start);
-            ylist = ylist.concat(nlist);
+            ylist = ylist.concat(getArray(item["range"]));
         });
 
         setXdir(xlist);
@@ -345,27 +358,27 @@ export default function MainWidget(props: any) {
                         }}
                     >
                         {xdir.map((elevation, index) => (
-                            <Item key={`x-dir-${index}`} variant="outlined">
+                            <Item key={`x-dir-${index}`} sx={{ border: '1px solid grey' }}>
                                 {`${elevation}`}
                             </Item>
                         ))}
                     </Box>
 
-                    <Paper variant="outlined">
+                    <Box component="span" sx={{ border: '2px solid grey' }}>
                         <Stack
                             direction="column"
                             justifyContent="center"
                             alignItems="center"
                             sx={{
-                                width: (LENGTH + 2) * ydir.length - 2,
-                                height: (LENGTH + 2) * xdir.length - 2
+                                width: (LENGTH + 2) * ydir.length - 4,
+                                height: (LENGTH + 2) * xdir.length - 4
                             }}
                         >
                             <SvgIcon sx={{ width: 100, height: 100, m: 2 }}>
-                                <AccessTimeIcon />
+                                { Axis }
                             </SvgIcon>
                         </Stack>
-                    </Paper>
+                        </Box>
                 </Stack>
 
                 <Box
@@ -380,7 +393,7 @@ export default function MainWidget(props: any) {
                     }}
                 >
                     {ydir.map((elevation, index) => (
-                        <Item key={`y-dir-${index}`} variant="outlined">
+                        <Item key={`y-dir-${index}`} sx={{ border: '1px solid grey' }}>
                             {`${elevation}`}
                         </Item>
                     ))}
@@ -414,10 +427,18 @@ export default function MainWidget(props: any) {
 
         if (singleScheme.length) {
             return (
-                <Box>
-                    <TextField id={`textfiled-${xItems}`} label={xItems} />
-                    <TextField id={`textfiled-${yItems}`} label={yItems} />
-                </Box>
+                <Stack
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                >
+                    <TextField id={`textfiled-${xItems}`} value={xItems} variant="standard" InputProps={{
+                        readOnly: true,
+                    }} />
+                    <TextField id={`textfiled-${yItems}`} value={yItems} variant="standard" InputProps={{
+                        readOnly: true,
+                    }} />
+                </Stack>
             );
         }
     }
@@ -474,34 +495,42 @@ export default function MainWidget(props: any) {
                 <DialogTitle>New Banking Scheme</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Please enter banking scheme here.
-          </DialogContentText>
-                    <Stack direction="column">
+                        Please add banking scheme.
+                    </DialogContentText>
+                    <Stack
+                        spacing={3}
+                        direction="column"
+                        justifyContent="center"
+                        alignItems="center"
+                        sx={{ minWidth: 420, minHeight:200 }}
+                    >
                         <Button
                             disabled={rangeFull}
                             onClick={(e) => handleOpenAdd(e, true)}
+                            sx={{ width: 200 }}
                         >
                             X Direction
-            </Button>
+                        </Button>
                         <Button
                             disabled={rangeFull}
                             onClick={(e) => handleOpenAdd(e, false)}
+                            sx={{ width: 200 }}
                         >
                             Y Direction
-            </Button>
+                        </Button>
                         {showUserScheme()}
                     </Stack>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => handleCloseNewBankingScheme(false)}>
                         Cancel
-          </Button>
+                    </Button>
                     <Button
                         disabled={schemeErr}
                         onClick={() => handleCloseNewBankingScheme(true)}
                     >
                         Add
-          </Button>
+                    </Button>
                 </DialogActions>
             </Dialog>
         );
@@ -535,21 +564,21 @@ export default function MainWidget(props: any) {
     return (
         <div className='jp-webds-widget-body'>
             <ThemeProvider theme={webdsTheme}>
-        <Stack direction="row">
-            {disaplyPanel()}
+                <Stack direction="row" spacing={6}>
+                    {disaplyPanel()}
 
-            <Stack direction="column" spacing={4} sx={{ ml: 3 }}>
-                {displayTxRxCount()}
+                    <Stack direction="column" spacing={4} sx={{ ml: 3 }}>
+                        {displayTxRxCount()}
 
-                {showBankingSchemeList()}
+                        {showBankingSchemeList()}
 
-                <Button onClick={handleOpenNewBankingScheme}>Add Banking Scheme</Button>
-                <Button onClick={handleApplyBankingScheme}>Apply</Button>
+                        <Button onClick={handleOpenNewBankingScheme}>Add Banking Scheme</Button>
+                        <Button onClick={handleApplyBankingScheme}>Apply</Button>
 
-                {displayNewBankingScheme()}
+                        {displayNewBankingScheme()}
 
-                {displaySingleBankingScheme()}
-            </Stack>
+                        {displaySingleBankingScheme()}
+                    </Stack>
                 </Stack>
             </ThemeProvider>
                 </div>
