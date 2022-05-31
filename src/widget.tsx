@@ -31,7 +31,7 @@ import { Axis } from "./axis";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from '@mui/icons-material/Add';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-
+import { requestAPI } from './handler';
 
 const LENGTH = 18;
 const LENGTHPX = "18px";
@@ -75,6 +75,48 @@ export default function MainWidget(props: any) {
     const [singleScheme, setSingleScheme] = useState([]);
     const [schemeErr, setSchemeErr] = useState(true);
 
+    const Get = async (): Promise<string | undefined> => {
+        try {
+            let url = 'config?type=static';
+
+            const reply = await requestAPI<any>(url, {
+                method: 'GET',
+            });
+
+            //console.log(reply);
+            return Promise.resolve(JSON.stringify(reply));
+        } catch (e) {
+            console.error(
+                `Error on POST.\n${e}`
+            );
+            return Promise.reject((e as Error).message);
+        }
+    }
+
+    const Post = async (): Promise<string | undefined> => {
+        var dataToSend = {
+            "txCount": txCount,
+            "rxCount": rxCount,
+            "imageRxes": xdir,
+            "imageTxes": ydir
+        }
+
+        try {
+            const reply = await requestAPI<any>('config', {
+                body: JSON.stringify(dataToSend),
+                method: 'POST',
+            });
+            console.log(reply);
+            return Promise.resolve(JSON.stringify(reply));
+        } catch (e) {
+            console.error(
+                `Error on POST ${dataToSend}.\n${e}`
+            );
+            return Promise.reject((e as Error).message);
+        }
+    }
+
+
     useEffect(() => {
         var settingRegistry: ISettingRegistry = props.settingRegistry;
 
@@ -96,25 +138,39 @@ export default function MainWidget(props: any) {
         }
 
         load();
+
+        Get().then(ret => {
+            let config = JSON.parse(ret);
+            setXdir(config["imageRxes"]);
+            setYdir(config["imageTxes"]);
+            setRxCount(config["numColumns"].toString());
+            setTxCount(config["numRows"].toString());
+        }).catch(e => {
+            console.log(e);
+        })
     }, []);
 
     useEffect(() => {
+        console.log("txCount", txCount);
         let num = parseInt(txCount, 10);
         if (isNaN(num) || isNaN(Number(txCount))) {
             //setAddrError(true);
         } else {
             if (num < 0) setTxCount("20");
             //setAddrError(false);
+            setMax(parseInt(txCount, 10) + parseInt(rxCount, 10));
         }
     }, [txCount]);
 
     useEffect(() => {
+        console.log("rxCount", rxCount);
         let num = parseInt(rxCount, 10);
         if (isNaN(num) || isNaN(Number(rxCount))) {
             //setAddrError(true);
         } else {
-            if (num < 0) setRxCount("20");
+            if (num < 0) setRxCount("40");
             //setAddrError(false);
+            setMax(parseInt(txCount, 10) + parseInt(rxCount, 10));
         }
     }, [rxCount]);
 
@@ -184,6 +240,9 @@ export default function MainWidget(props: any) {
 
 
         console.log("APPLY");
+
+        Post().then(ret => { console.log(ret); })
+            .catch(e => alert(e))
     };
 
     const handleCloseNewBankingScheme = (add: boolean) => {
@@ -286,13 +345,11 @@ export default function MainWidget(props: any) {
     const handleTxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         var count = event.target.value;
         setTxCount(count);
-        setMax(parseInt(count, 10) + parseInt(rxCount, 10));
     };
 
     const handleRxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         var count = event.target.value;
         setRxCount(count);
-        setMax(parseInt(count, 10) + parseInt(txCount, 10));
     };
 
     const handleSelectBankingScheme = (
@@ -571,7 +628,7 @@ export default function MainWidget(props: any) {
                     label="Number Tx"
                     id="standard-size-txcount"
                     variant="standard"
-                    defaultValue={txCount}
+                    value={txCount}
                     onChange={handleTxCount}
                     sx={{ width: "15ch" }}
                 />
@@ -579,7 +636,7 @@ export default function MainWidget(props: any) {
                     label="Number Rx"
                     id="standard-size-rxcount"
                     variant="standard"
-                    defaultValue={rxCount}
+                    value={rxCount}
                     onChange={handleRxCount}
                     sx={{ width: "15ch" }}
                 />
