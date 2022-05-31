@@ -28,11 +28,11 @@ namespace CommandIDs {
  * Initialization data for the reprogram extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'sensor_mapping:plugin',
+  id: '@webds/sensor_mapping:plugin',
   autoStart: true,
   optional: [ISettingRegistry],
   requires: [ILauncher, ILayoutRestorer, WebDSService],
-  activate: (
+  activate: async (
     app: JupyterFrontEnd,
     launcher: ILauncher,
     restorer: ILayoutRestorer,
@@ -40,18 +40,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
     settingRegistry: ISettingRegistry | null) => {
     console.log('JupyterLab extension webds_sensor_mapping is activated!');
 
+	let settings: ISettingRegistry.ISettings | undefined = undefined;
+
     if (settingRegistry) {
-        console.log(settingRegistry);
-        /*
-        settingRegistry
-        .load(plugin.id)
-        .then(settings => {
-          console.log('webds_sensor_mapping settings loaded:', settings.composite);
-        })
-        .catch(reason => {
-          console.error('Failed to load settings for webds_sensor_mapping.', reason);
-        });
-        */
+      try {
+        settings = await settingRegistry.load(plugin.id);
+      } catch (reason) {
+        console.log(`Failed to load settings for ${plugin.id}\n${reason}`);
+      }
     }
 
     let widget: MainAreaWidget;
@@ -67,7 +63,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 	  icon: extensionSensorMappingIcon,
       execute: () => {
         if (!widget || widget.isDisposed) {
-          let content = new ShellWidget(service);
+          let content = new ShellWidget(service, settings);
 
           widget = new MainAreaWidget<ShellWidget>({ content });
           widget.id = 'sensor_mapping';

@@ -1,5 +1,5 @@
 {
-  "name": "@webds/webds_sensor_mapping",
+  "name": "@webds/sensor_mapping",
   "version": "0.1.0",
   "description": " set up Tx/Rx Mapping",
   "keywords": [

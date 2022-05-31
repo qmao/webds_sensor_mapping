@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g pointer-events="none">
+    <path class="jp-icon2" fill="#424242" d="M2 107h119v14H2z"/>
+    <path class="jp-icon2" fill="#424242" d="M16 2v329H2V2zm105 0v119h-14V2z"/>
+    <path class="jp-icon2" fill="#424242" d="M2 212h119v14H2z"/>
+    <path class="jp-icon2" fill="#424242" d="M121 107v119h-14V107zM7 317h416v14H7z"/>
+    <path class="jp-icon2" fill="#424242" d="M121 212v119h-14V212zM7 2h418v14H7z"/>
+    <path class="jp-icon2" fill="#424242" d="M121 2v119h-14V2zm314 0v434h-14V2z"/>
+    <path class="jp-icon2" fill="#424242" d="M107 422h328v14H107z"/>
+    <path class="jp-icon2" fill="#424242" d="M121 317v119h-14V317zm105 0v119h-14V317zm105 0v119h-14V317z"/>
+  </g>
+</svg>
