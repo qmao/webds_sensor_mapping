@@ -68,8 +68,10 @@ export const UserContext = createContext({
     rxMappingInDialog: "",
     txDir: [],
     rxDir: [],
-    txCount: 0,
-    rxCount: 0,
+    txCount: "0",
+    rxCount: "0",
     bankingSchemeConfig: [],
-    selectedBankingScheme: undefined
+    selectedBankingScheme: undefined,
+    txDefaultList: [...Array(100).keys()],
+    rxDefaultList: [...Array(100).keys()]
 });

@@ -119,24 +119,14 @@ export default function MainWidget(props: any) {
     const [txDir, setTxDir] = useState<number[]>([]);
     const [rxDir, setRxDir] = useState<number[]>([]);
 
-    const [txMapping, setTxMapping] = useState("");
-    const [rxMapping, setRxMapping] = useState("");
-
     const [txMappingBase, setTxMappingBase] = useState("");
     const [rxMappingBase, setRxMappingBase] = useState("");
-
-    const [txCount, setTxCount] = useState("0");
-    const [rxCount, setRxCount] = useState("0");
 
     const [txCountSimple, setTxCountSimple] = useState("0");
     const [rxCountSimple, setRxCountSimple] = useState("0");
 
     const [txDim, setTxDim] = useState(TX_DEFAULT.length);
     const [rxDim, setRxDim] = useState(RX_DEFAULT.length);
-
-    const [txDefaultList, setTxDefaultList] = useState([...Array(100).keys()]);
-    const [rxDefaultList, setRxDefaultList] = useState([...Array(100).keys()]);
-    //const [bankingScheme, setBankingScheme] = useState([]);
 
     const [txError, setTxError] = useState(false);
     const [rxError, setRxError] = useState(false);
@@ -150,6 +140,8 @@ export default function MainWidget(props: any) {
     const context = useContext(UserContext);
 
     const [expanded, setExpanded] = useState(true);
+
+    const [isReady, setReady] = useState(false);
 
     const Get = async (): Promise<string | undefined> => {
         try {
@@ -169,12 +161,12 @@ export default function MainWidget(props: any) {
 
     const WriteToRAM = async (): Promise<string | undefined> => {
         var dataToSend = {
-            txCount: txCount,
-            rxCount: rxCount,
+            txCount: txCountSimple,
+            rxCount: rxCountSimple,
             imageRxes: xdir,
             imageTxes: ydir,
-            numColumns: txCount,
-            numRows: rxCount
+            numColumns: txCountSimple,
+            numRows: rxCountSimple
         };
 
         try {
@@ -211,7 +203,7 @@ export default function MainWidget(props: any) {
         var ret = {} as IMappingInfo;
         var count = parseInt(userCount, 10);
         if (user.length !== count) {
-            ret.info = "number " + user.length + " not match " + count;
+            ret.info = "count " + user.length + " not match " + count;
             ret.status = true;
         }
         return ret;
@@ -314,7 +306,6 @@ export default function MainWidget(props: any) {
         } else if (xTrx === "RX") {
             setYdir(txDir);
         }
-        //////setTxCount(txDir.length.toString());
     }, [txDir]);
 
     useEffect(() => {
@@ -323,7 +314,6 @@ export default function MainWidget(props: any) {
         } else if (xTrx === "RX") {
             setXdir(rxDir);
         }
-        //////setRxCount(rxDir.length.toString());
     }, [rxDir]);
 
     useEffect(() => {
@@ -335,43 +325,6 @@ export default function MainWidget(props: any) {
             setYdir(txDir);
         }
     }, [xTrx]);
-
-    useEffect(() => {
-        setTxCount(txDefaultList.length.toString());
-        setTxMapping(txDefaultList.toString());
-    }, [txDefaultList]);
-
-    useEffect(() => {
-        setRxCount(rxDefaultList.length.toString());
-        setRxMapping(rxDefaultList.toString());
-    }, [rxDefaultList]);
-
-    useEffect(() => {
-        setTxMappingBase(txMapping);
-
-        var ret = checkInputMappingIsValid(txMapping);
-        var data = ret.content;
-        setTxDir(data);
-
-        ret = CheckMapping(txMapping, txDefaultList, txCount);
-        setTxError(ret.status);
-        setTxErrorInfo(ret.info);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [txMapping]);
-
-    useEffect(() => {
-        setRxMappingBase(rxMapping);
-
-        var ret = checkInputMappingIsValid(rxMapping);
-        var data = ret.content;
-        context.rxDir = data;
-        setRxDir(data);
-
-        ret = CheckMapping(rxMapping, rxDefaultList, rxCount);
-        setRxError(ret.status);
-        setRxErrorInfo(ret.info);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rxMapping]);
 
     useEffect(() => {
         async function load() {
@@ -413,73 +366,34 @@ export default function MainWidget(props: any) {
 
                 setXTrx(config["txAxis"] ? "TX" : "RX");
 
-                setTxCount(txlen.toString()); //numColumns
-                setRxCount(rxlen.toString()); //numRows
+                updateTxCount(txlen.toString()); //numColumns
+                updateRxCount(rxlen.toString()); //numRows
 
                 setTxDim(tx.length);
                 setRxDim(rx.length);
 
-                setTxMapping(tx.slice(0, txlen).toString());
-                setRxMapping(rx.slice(0, rxlen).toString());
+                updateTxMapping(tx.slice(0, txlen).toString());
+                updateRxMapping(rx.slice(0, rxlen).toString());
 
+                setReady(true);
             })
             .catch((e) => {
                 console.log(e);
-                setRxMapping(RX_READ_FROM_DEVICE.toString());
-                setTxMapping(TX_READ_FROM_DEVICE.toString());
-                setTxCount(TX_READ_FROM_DEVICE.length.toString());
-                setRxCount(RX_READ_FROM_DEVICE.length.toString());
+                updateRxMapping(RX_READ_FROM_DEVICE.toString());
+                updateTxMapping(TX_READ_FROM_DEVICE.toString());
+                updateTxCount(TX_READ_FROM_DEVICE.length.toString());
+                updateRxCount(RX_READ_FROM_DEVICE.length.toString());
                 setRxDim(RX_READ_FROM_DEVICE.length);
                 setTxDim(TX_READ_FROM_DEVICE.length);
 
                 setXTrx(TX_AXIS_READ_FROM_DEVICE ? "TX" : "RX");
 
                 console.log(txDim, rxDim);
+
+                setReady(false);
             });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    useEffect(() => {
-        setTxCountSimple(txCount);
-        let num = parseInt(txCount, 10);
-        if (isNaN(num) || isNaN(Number(txCount))) {
-            //setAddrError(true);
-        } else {
-            if (num < 0) setTxCount("20");
-            //setAddrError(false);
-        }
-    }, [txCount]);
-
-    useEffect(() => {
-        let num = parseInt(txCountSimple, 10);
-        if (isNaN(num) || isNaN(Number(txCountSimple))) {
-            setTxCountError(true);
-        } else {
-            if (num < 0) setTxCount("20");
-            setTxCountError(false);
-        }
-    }, [txCountSimple]);
-
-    useEffect(() => {
-        setRxCountSimple(rxCount);
-        let num = parseInt(rxCount, 10);
-        if (isNaN(num) || isNaN(Number(rxCount))) {
-            //setAddrError(true);
-        } else {
-            if (num < 0) setRxCount("40");
-            //setAddrError(false);
-        }
-    }, [rxCount]);
-
-    useEffect(() => {
-        let num = parseInt(rxCountSimple, 10);
-        if (isNaN(num) || isNaN(Number(rxCountSimple))) {
-            setRxCountError(true);
-        } else {
-            if (num < 0) setRxCount("40");
-            setRxCountError(false);
-        }
-    }, [rxCountSimple]);
 
     const handleApplyBankingScheme = (commit: boolean) => {
         /*
@@ -509,12 +423,74 @@ export default function MainWidget(props: any) {
             .catch((e) => alert(e));
     };
 
+    const updateTxCount = (data: string) => {
+        context.txCount = data;
+
+        setTxCountSimple(data);
+
+        let num = parseInt(data, 10);
+        if (isNaN(num) || isNaN(Number(data)) || num < 0) {
+            setTxCountError(true);
+        } else {
+            setTxCountError(false);
+        }
+    }
+
+    const updateRxCount = (data: string) => {
+        context.rxCount = data;
+
+        setRxCountSimple(data);
+
+        let num = parseInt(data, 10);
+        if (isNaN(num) || isNaN(Number(data)) || num < 0) {
+            setRxCountError(true);
+        } else {
+            setRxCountError(false);
+        }
+    }
+
+    const updateTxDefaultList = (data: number[]) => {
+        context.txDefaultList = data;
+        updateTxCount(data.length.toString());
+        updateTxMapping(data.toString());
+    }
+
+    const updateRxDefaultList = (data: number[]) => {
+        context.rxDefaultList = data;
+        updateRxCount(data.length.toString());
+        updateRxMapping(data.toString());
+    }
+
+    const updateTxMapping = (mapping: string) => {
+        setTxMappingBase(mapping);
+
+        var ret = checkInputMappingIsValid(mapping);
+        var data = ret.content;
+
+        ret = CheckMapping(mapping, context.txDefaultList, context.txCount);
+        setTxError(ret.status);
+        setTxErrorInfo(ret.info);
+        setTxDir(data);
+    }
+
+    const updateRxMapping = (mapping: string) => {
+        setRxMappingBase(mapping);
+
+        var ret = checkInputMappingIsValid(mapping);
+        var data = ret.content;
+
+        ret = CheckMapping(mapping, context.rxDefaultList, context.rxCount);
+        setRxError(ret.status);
+        setRxErrorInfo(ret.info);
+        setRxDir(data);
+    }
+
     const handleTxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTxCountSimple(event.target.value);
     };
 
     const handleTxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
-        setTxCount(event.target.value);
+        updateTxCount(event.target.value);
 
         var ret = CheckMappingCount(txDir, event.target.value);
         setTxError(ret.status);
@@ -526,7 +502,7 @@ export default function MainWidget(props: any) {
     };
 
     const handleRxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
-        setRxCount(event.target.value);
+        updateRxCount(event.target.value);
         var ret = CheckMappingCount(rxDir, event.target.value);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
@@ -537,12 +513,11 @@ export default function MainWidget(props: any) {
     };
 
     const handleTxMappingBlur = () => {
-        console.log(txMappingBase);
-        setTxMapping(txMappingBase);
+        updateTxMapping(txMappingBase);
     };
 
     const handleRxMappingBlur = () => {
-        setRxMapping(rxMappingBase);
+        updateRxMapping(rxMappingBase);
     };
 
     const handleRxMapping = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -565,9 +540,9 @@ export default function MainWidget(props: any) {
             (xTrx === "TX" && direction === "x") ||
             (xTrx !== "TX" && direction === "y")
         ) {
-            setTxMapping(user.toString());
+            updateTxMapping(user.toString());
         } else {
-            setRxMapping(user.toString());
+            updateRxMapping(user.toString());
         }
     };
 
@@ -605,8 +580,8 @@ export default function MainWidget(props: any) {
         var tx_table: number[] = [];
         var rx_table: number[] = [];
         if (select === 0) {
-            setTxDefaultList([...Array(100).keys()]);
-            setRxDefaultList([...Array(100).keys()]);
+            updateTxDefaultList([...Array(100).keys()]);
+            updateRxDefaultList([...Array(100).keys()]);
             return;
         }
         var trx_list = context.bankingSchemeConfig[select]["list"];
@@ -626,8 +601,8 @@ export default function MainWidget(props: any) {
             }
         });
 
-        setTxDefaultList(tx_table);
-        setRxDefaultList(rx_table);
+        updateTxDefaultList(tx_table);
+        updateRxDefaultList(rx_table);
     };
 
     const handleAccordionExpend = () => {
@@ -967,10 +942,10 @@ export default function MainWidget(props: any) {
                 <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
                     <Stack direction="column" spacing={6} sx={{ ml: 3, pr: 6 }}>
                         {disaplyBankingScheme()}
-                        {(xdir.length !== 0 || ydir.length !== 0) && displayTxRxCount()}
-                        {(xdir.length !== 0 || ydir.length !== 0) && displayTxRxMapping()}
+                        {isReady && displayTxRxCount()}
+                        {isReady && displayTxRxMapping()}
                     </Stack>
-                    {(xdir.length !== 0 || ydir.length !== 0) && displayPanelWithXY()}
+                    {isReady && displayPanelWithXY()}
                 </Stack>
             </div>
         </ThemeProvider>
