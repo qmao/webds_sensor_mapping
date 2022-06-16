@@ -6,7 +6,7 @@ import {
 
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
-import { MainAreaWidget, WidgetTracker } from '@jupyterlab/apputils';
+import { WidgetTracker } from '@jupyterlab/apputils';
 
 import { ILauncher } from '@jupyterlab/launcher';
 
@@ -14,7 +14,7 @@ import { ShellWidget } from './wrapper'
 
 import { extensionSensorMappingIcon } from './icons';
 
-import { WebDSService } from '@webds/service';
+import { WebDSService, WebDSWidget } from '@webds/service';
 
 
 /**
@@ -40,10 +40,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
     settingRegistry: ISettingRegistry | null) => {
     console.log('JupyterLab extension webds_sensor_mapping is activated!');
 
-    let widget: MainAreaWidget;
+    let widget: WebDSWidget;
     const { commands, shell } = app;
     const command = CommandIDs.sensor_mapping;
-    const category = 'WebDS';
+    const category: "WebDS - Tuning"
     const extension_string = 'TX/RX Mapping';
 
 
