@@ -42,52 +42,8 @@ const MAIN_WIDTH = 1000;
 const ITEM_LENGTH_MIN = 8;
 const ITEM_FONTSIZE = 15;
 const ITEM_RADIUS = "5px";
-const TX_DEFAULT = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
-];
-const RX_DEFAULT = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
-];
+const TX_DEFAULT = [];
+const RX_DEFAULT = [];
 const zoomIn = true;
 const itemLength = ITEM_LENGTH_MIN;
 const PANEL_SENSOR_MAX = 350;
@@ -158,7 +114,7 @@ export default function MainWidget(props: any) {
     const [xdir, setXdir] = useState<number[]>(TX_DEFAULT);
     const [ydir, setYdir] = useState<number[]>(RX_DEFAULT);
 
-    const [xTrx, setXTrx] = useState("TX");
+    const [xTrx, setXTrx] = useState("");
 
     const [txDir, setTxDir] = useState<number[]>([]);
     const [rxDir, setRxDir] = useState<number[]>([]);
@@ -455,6 +411,8 @@ export default function MainWidget(props: any) {
                 var tx = config["imageTxes"];
                 var rx = config["imageRxes"];
 
+                setXTrx(config["txAxis"] ? "TX" : "RX");
+
                 setTxCount(txlen.toString()); //numColumns
                 setRxCount(rxlen.toString()); //numRows
 
@@ -464,7 +422,6 @@ export default function MainWidget(props: any) {
                 setTxMapping(tx.slice(0, txlen).toString());
                 setRxMapping(rx.slice(0, rxlen).toString());
 
-                setXTrx(config["txAxis"] ? "TX" : "RX");
             })
             .catch((e) => {
                 console.log(e);
@@ -1010,10 +967,10 @@ export default function MainWidget(props: any) {
                 <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
                     <Stack direction="column" spacing={6} sx={{ ml: 3, pr: 6 }}>
                         {disaplyBankingScheme()}
-                        {displayTxRxCount()}
-                        {displayTxRxMapping()}
+                        {(xdir.length !== 0 || ydir.length !== 0) && displayTxRxCount()}
+                        {(xdir.length !== 0 || ydir.length !== 0) && displayTxRxMapping()}
                     </Stack>
-                    {displayPanelWithXY()}
+                    {(xdir.length !== 0 || ydir.length !== 0) && displayPanelWithXY()}
                 </Stack>
             </div>
         </ThemeProvider>
