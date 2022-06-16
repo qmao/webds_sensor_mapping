@@ -916,7 +916,7 @@ export default function MainWidget(props: any) {
                         <Typography sx={{ width: "33%", flexShrink: 0 }}>
                             Banking Scheme
             </Typography>
-                        <IconButton onClick={() => handleAccordionExpend()}>
+                        <IconButton color="primary" onClick={() => handleAccordionExpend()}>
                             {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </IconButton>
                     </Stack>
