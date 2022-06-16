@@ -44,7 +44,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const { commands, shell } = app;
     const command = CommandIDs.sensor_mapping;
     const category = 'WebDS - Tuning'
-    const extension_string = 'TX/RX Mapping';
+    const extension_string = 'Sensor Mapping';
 
 
     commands.addCommand(command, {
