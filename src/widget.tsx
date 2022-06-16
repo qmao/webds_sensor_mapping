@@ -186,6 +186,7 @@ export default function MainWidget(props: any) {
     const [rxError, setRxError] = useState(false);
     const [txCountError, setTxCountError] = useState(false);
     const [rxCountError, setRxCountError] = useState(false);
+    const [configFileError, setConfigFileError] = useState(false);
 
     const [txErrorInfo, setTxErrorInfo] = useState("");
     const [rxErrorInfo, setRxErrorInfo] = useState("");
@@ -417,10 +418,9 @@ export default function MainWidget(props: any) {
     }, [rxMapping]);
 
     useEffect(() => {
-        //var settingRegistry: ISettingRegistry = props.settingRegistry;
-
         async function load() {
             /*
+            var settingRegistry: ISettingRegistry = props.settingRegistry;
             if (settingRegistry) {
                 try {
                     var id = "@webds/sensor_mapping:plugin";
@@ -437,8 +437,10 @@ export default function MainWidget(props: any) {
 
             try {
                 await props.service.packrat.cache.addPrivateConfig();
+                setConfigFileError(false);
             } catch (error) {
                 alert(error);
+                setConfigFileError(true);
                 return;
             }
         }
@@ -801,14 +803,14 @@ export default function MainWidget(props: any) {
             >
                 <Button
                     onClick={() => handleApplyBankingScheme(true)}
-                    //disabled={rxError || txError}
+                    disabled={configFileError}
                     sx={{ width: 150 }}
                 >
                     Write To Flash
         </Button>
                 <Button
                     onClick={() => handleApplyBankingScheme(false)}
-                    //disabled={rxError || txError}
+                    disabled={configFileError}
                     sx={{ width: 150 }}
                 >
                     Write To RAM
