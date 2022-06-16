@@ -28,7 +28,7 @@ import {
     Divider
 } from "@mui/material";
 
-import { ISettingRegistry } from "@jupyterlab/settingregistry";
+//import { ISettingRegistry } from "@jupyterlab/settingregistry";
 import { requestAPI } from './handler';
 
 interface IMappingInfo {
@@ -180,7 +180,7 @@ export default function MainWidget(props: any) {
 
     const [txDefaultList, setTxDefaultList] = useState([...Array(100).keys()]);
     const [rxDefaultList, setRxDefaultList] = useState([...Array(100).keys()]);
-    const [bankingScheme, setBankingScheme] = useState([]);
+    //const [bankingScheme, setBankingScheme] = useState([]);
 
     const [txError, setTxError] = useState(false);
     const [rxError, setRxError] = useState(false);
@@ -417,9 +417,10 @@ export default function MainWidget(props: any) {
     }, [rxMapping]);
 
     useEffect(() => {
-        var settingRegistry: ISettingRegistry = props.settingRegistry;
+        //var settingRegistry: ISettingRegistry = props.settingRegistry;
 
         async function load() {
+            /*
             if (settingRegistry) {
                 try {
                     var id = "@webds/sensor_mapping:plugin";
@@ -432,6 +433,13 @@ export default function MainWidget(props: any) {
                 } catch (reason) {
                     console.log(`Failed to load settings for ${id}\n${reason}`);
                 }
+            }*/
+
+            try {
+                await props.service.packrat.cache.addPrivateConfig();
+            } catch (error) {
+                alert(error);
+                return;
             }
         }
 
@@ -515,6 +523,7 @@ export default function MainWidget(props: any) {
     }, [rxCountSimple]);
 
     const handleApplyBankingScheme = (commit: boolean) => {
+        /*
         var settingRegistry: ISettingRegistry = props.settingRegistry;
         async function set() {
             if (settingRegistry) {
@@ -527,6 +536,7 @@ export default function MainWidget(props: any) {
             }
         }
         set();
+        */
 
         WriteToRAM()
             .then((ret) => {
