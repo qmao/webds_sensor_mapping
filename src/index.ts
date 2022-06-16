@@ -43,7 +43,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let widget: WebDSWidget;
     const { commands, shell } = app;
     const command = CommandIDs.sensor_mapping;
-    const category: "WebDS - Tuning"
+    const category = 'WebDS - Tuning'
     const extension_string = 'TX/RX Mapping';
 
 
@@ -55,7 +55,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (!widget || widget.isDisposed) {
           let content = new ShellWidget(service, settingRegistry);
 
-          widget = new MainAreaWidget<ShellWidget>({ content });
+          widget = new WebDSWidget<ShellWidget>({ content });
           widget.id = 'sensor_mapping';
           widget.title.label = extension_string;
           widget.title.closable = true;
@@ -78,7 +78,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       category: category
     });
 
-    let tracker = new WidgetTracker<MainAreaWidget>({ namespace: 'webds_sensor_mapping' });
+    let tracker = new WidgetTracker<WebDSWidget>({ namespace: 'webds_sensor_mapping' });
     restorer.restore(tracker, { command, name: () => 'webds_sensor_mapping' });
   }
 };
