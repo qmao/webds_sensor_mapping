@@ -25,7 +25,9 @@ import {
     Input,
     Typography,
     IconButton,
-    Divider
+    Divider,
+    Alert,
+    Snackbar
 } from "@mui/material";
 
 //import { ISettingRegistry } from "@jupyterlab/settingregistry";
@@ -111,6 +113,13 @@ const RX_READ_FROM_DEVICE = [
 const TX_AXIS_READ_FROM_DEVICE = true;
 
 export default function MainWidget(props: any) {
+
+    interface IAlertInfo {
+        state: boolean;
+        message: string;
+        severity: 'error' | 'info' | 'success' | 'warning'
+    }
+
     const [xdir, setXdir] = useState<number[]>(TX_DEFAULT);
     const [ydir, setYdir] = useState<number[]>(RX_DEFAULT);
 
@@ -137,11 +146,12 @@ export default function MainWidget(props: any) {
     const [txErrorInfo, setTxErrorInfo] = useState("");
     const [rxErrorInfo, setRxErrorInfo] = useState("");
 
+    const [expanded, setExpanded] = useState(true);
+    const [isReady, setReady] = useState(false);
+    const [openAlert, setOpenAlert] = useState<IAlertInfo>({ state: false, message: "", severity: 'info' });
+
     const context = useContext(UserContext);
 
-    const [expanded, setExpanded] = useState(true);
-
-    const [isReady, setReady] = useState(false);
 
     const Get = async (): Promise<string | undefined> => {
         try {
@@ -327,6 +337,9 @@ export default function MainWidget(props: any) {
     }, [xTrx]);
 
     useEffect(() => {
+        updateTxDefaultList([...Array(100).keys()]);
+        updateRxDefaultList([...Array(100).keys()]);
+
         async function load() {
             /*
             var settingRegistry: ISettingRegistry = props.settingRegistry;
@@ -348,7 +361,7 @@ export default function MainWidget(props: any) {
                 await props.service.packrat.cache.addPrivateConfig();
                 setConfigFileError(false);
             } catch (error) {
-                alert(error);
+                setOpenAlert({ state: true, severity: 'error', message: "private config not found" });
                 setConfigFileError(true);
                 return;
             }
@@ -419,8 +432,9 @@ export default function MainWidget(props: any) {
                     return ret;
             }).then((ret) => {
                 console.log(ret);
+                setOpenAlert({ state: true, severity: 'success', message: "Success" });
             })
-            .catch((e) => alert(e));
+            .catch((e) => setOpenAlert({ state: true, severity: 'error', message: e.toString() }));
     };
 
     const updateTxCount = (data: string) => {
@@ -680,6 +694,7 @@ export default function MainWidget(props: any) {
     }
     function displayPanel() {
         return (
+            <Paper elevation={8}>
             <Stack
                 justifyContent="space-between"
                 sx={{
@@ -717,7 +732,8 @@ export default function MainWidget(props: any) {
                         </Stack>
                     </Stack>
                 )}
-            </Stack>
+                </Stack>
+                </Paper>
         );
     }
 
@@ -809,15 +825,6 @@ export default function MainWidget(props: any) {
                             flexWrap: "wrap"
                         }}
                     >
-                        {ydir.length !== 0 && (
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    height: itemLength,
-                                    width: itemLength
-                                }}
-                            />
-                        )}
                         {!zoomIn &&
                             xdir.map((elevation, index) => (
                                 <Tooltip title={`X${index}`} placement="top">
@@ -881,7 +888,7 @@ export default function MainWidget(props: any) {
     function disaplyBankingScheme() {
         return (
             <div>
-                <Paper>
+                <Paper variant="outlined" square>
                     <Stack
                         direction="row"
                         justifyContent="space-between"
@@ -904,6 +911,33 @@ export default function MainWidget(props: any) {
         );
     }
 
+    const handleCloseAlert = (
+        event?: React.SyntheticEvent | Event,
+        reason?: string
+    ) => {
+        if (reason === "clickaway") {
+            return;
+        }
+        setOpenAlert({...openAlert, state: false});
+    };
+
+    function displayAlert() {
+        return (
+            <Snackbar
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right' }}
+                open={openAlert.state} autoHideDuration={3000} onClose={handleCloseAlert}>
+                <Alert
+                    onClose={handleCloseAlert}
+                    severity={openAlert.severity}
+                    sx={{ width: "100%" }}
+                >
+                    {openAlert.message}
+          </Alert>
+            </Snackbar>
+        );
+    }
     /*
     function displayConfigMinimize() {
       return (
@@ -947,6 +981,7 @@ export default function MainWidget(props: any) {
                     </Stack>
                     {isReady && displayPanelWithXY()}
                 </Stack>
+                {displayAlert()}
             </div>
         </ThemeProvider>
     );
