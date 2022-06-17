@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import { ThemeProvider } from "@mui/material/styles";
 import BankingScheme from "./bankingScheme";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { UserContext } from "./context";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -27,7 +26,9 @@ import {
     IconButton,
     Divider,
     Alert,
-    Snackbar
+    Snackbar,
+    CircularProgress,
+    Backdrop
 } from "@mui/material";
 
 //import { ISettingRegistry } from "@jupyterlab/settingregistry";
@@ -51,66 +52,6 @@ const itemLength = ITEM_LENGTH_MIN;
 const PANEL_SENSOR_MAX = 350;
 const PANEL_HEIGHT_MIN = PANEL_SENSOR_MAX + 20;
 
-const TX_READ_FROM_DEVICE = [
-    29,
-    30,
-    35,
-    33,
-    37,
-    25,
-    34,
-    32,
-    21,
-    31,
-    38,
-    26,
-    22,
-    23,
-    27,
-    28,
-    0
-];
-const RX_READ_FROM_DEVICE = [
-    8,
-    9,
-    19,
-    11,
-    18,
-    12,
-    16,
-    7,
-    3,
-    17,
-    10,
-    5,
-    15,
-    6,
-    13,
-    14,
-    2,
-    1,
-    59,
-    0,
-    4,
-    58,
-    57,
-    56,
-    48,
-    45,
-    44,
-    52,
-    51,
-    43,
-    54,
-    42,
-    53,
-    47,
-    46,
-    50,
-    0,
-    0
-];
-const TX_AXIS_READ_FROM_DEVICE = true;
 
 export default function MainWidget(props: any) {
 
@@ -131,9 +72,6 @@ export default function MainWidget(props: any) {
     const [txMappingBase, setTxMappingBase] = useState("");
     const [rxMappingBase, setRxMappingBase] = useState("");
 
-    const [txCountSimple, setTxCountSimple] = useState("0");
-    const [rxCountSimple, setRxCountSimple] = useState("0");
-
     const [txDim, setTxDim] = useState(TX_DEFAULT.length);
     const [rxDim, setRxDim] = useState(RX_DEFAULT.length);
 
@@ -150,8 +88,11 @@ export default function MainWidget(props: any) {
     const [isReady, setReady] = useState(false);
     const [openAlert, setOpenAlert] = useState<IAlertInfo>({ state: false, message: "", severity: 'info' });
 
-    const context = useContext(UserContext);
-
+    const [txCount, setTxCount] = useState("0");
+    const [rxCount, setRxCount] = useState("0");
+    const [txDefaultList, setTxDefaultList] = useState([...Array(100).keys()]);
+    const [rxDefaultList, setRxDefaultList] = useState([...Array(100).keys()]);
+    const [isProcessing, setProcessing] = useState(true);
 
     const Get = async (): Promise<string | undefined> => {
         try {
@@ -171,12 +112,12 @@ export default function MainWidget(props: any) {
 
     const WriteToRAM = async (): Promise<string | undefined> => {
         var dataToSend = {
-            txCount: txCountSimple,
-            rxCount: rxCountSimple,
+            txCount: txCount,
+            rxCount: rxCount,
             imageRxes: xdir,
             imageTxes: ydir,
-            numColumns: txCountSimple,
-            numRows: rxCountSimple
+            numColumns: txCount,
+            numRows: rxCount
         };
 
         try {
@@ -336,40 +277,13 @@ export default function MainWidget(props: any) {
         }
     }, [xTrx]);
 
-    useEffect(() => {
-        updateTxDefaultList([...Array(100).keys()]);
-        updateRxDefaultList([...Array(100).keys()]);
-
-        async function load() {
-            /*
-            var settingRegistry: ISettingRegistry = props.settingRegistry;
-            if (settingRegistry) {
-                try {
-                    var id = "@webds/sensor_mapping:plugin";
-                    var settings = await settingRegistry.load(id);
-
-                    if (settings != null) {
-                        var bsSettings = settings.composite["bankingScheme"] as object[];
-                        setBankingScheme(bsSettings);
-                    }
-                } catch (reason) {
-                    console.log(`Failed to load settings for ${id}\n${reason}`);
-                }
-            }*/
-
-            try {
-                await props.service.packrat.cache.addPrivateConfig();
+    const initialize = async () => {
+        props.service.packrat.cache.addPrivateConfig()
+            .then((ret) => {
+                console.log(ret);
                 setConfigFileError(false);
-            } catch (error) {
-                setOpenAlert({ state: true, severity: 'error', message: "private config not found" });
-                setConfigFileError(true);
-                return;
-            }
-        }
-
-        load();
-
-        Get()
+            })
+            .then(() => Get())
             .then((ret) => {
                 let config = JSON.parse(ret);
                 var txlen = config["txCount"];
@@ -379,33 +293,31 @@ export default function MainWidget(props: any) {
 
                 setXTrx(config["txAxis"] ? "TX" : "RX");
 
-                updateTxCount(txlen.toString()); //numColumns
-                updateRxCount(rxlen.toString()); //numRows
+                updateTxCount(txlen.toString());
+                updateRxCount(rxlen.toString());
 
                 setTxDim(tx.length);
                 setRxDim(rx.length);
 
-                updateTxMapping(tx.slice(0, txlen).toString());
-                updateRxMapping(rx.slice(0, rxlen).toString());
+                updateTxMapping(tx.slice(0, txlen).toString(), txlen.toString());
+                updateRxMapping(rx.slice(0, rxlen).toString(), rxlen.toString());
 
                 setReady(true);
-            })
-            .catch((e) => {
-                console.log(e);
-                updateRxMapping(RX_READ_FROM_DEVICE.toString());
-                updateTxMapping(TX_READ_FROM_DEVICE.toString());
-                updateTxCount(TX_READ_FROM_DEVICE.length.toString());
-                updateRxCount(RX_READ_FROM_DEVICE.length.toString());
-                setRxDim(RX_READ_FROM_DEVICE.length);
-                setTxDim(TX_READ_FROM_DEVICE.length);
-
-                setXTrx(TX_AXIS_READ_FROM_DEVICE ? "TX" : "RX");
-
                 console.log(txDim, rxDim);
+            })
+            .catch(err => {
+                console.log(err);
+                setOpenAlert({ state: true, severity: 'error', message: err.toString() });
+                setConfigFileError(true);
+                return;
+            })
+            .finally(() =>
+                setProcessing(false)
+            )
+    }
 
-                setReady(false);
-            });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        initialize();
     }, []);
 
     const handleApplyBankingScheme = (commit: boolean) => {
@@ -438,10 +350,8 @@ export default function MainWidget(props: any) {
     };
 
     const updateTxCount = (data: string) => {
-        context.txCount = data;
-
-        setTxCountSimple(data);
-
+        console.log("QQQQ1", data);
+        setTxCount(data);
         let num = parseInt(data, 10);
         if (isNaN(num) || isNaN(Number(data)) || num < 0) {
             setTxCountError(true);
@@ -451,10 +361,7 @@ export default function MainWidget(props: any) {
     }
 
     const updateRxCount = (data: string) => {
-        context.rxCount = data;
-
-        setRxCountSimple(data);
-
+        setRxCount(data);
         let num = parseInt(data, 10);
         if (isNaN(num) || isNaN(Number(data)) || num < 0) {
             setRxCountError(true);
@@ -464,46 +371,49 @@ export default function MainWidget(props: any) {
     }
 
     const updateTxDefaultList = (data: number[]) => {
-        context.txDefaultList = data;
+        setTxDefaultList(data);
         updateTxCount(data.length.toString());
         updateTxMapping(data.toString());
     }
 
     const updateRxDefaultList = (data: number[]) => {
-        context.rxDefaultList = data;
+        setRxDefaultList(data);
         updateRxCount(data.length.toString());
         updateRxMapping(data.toString());
     }
 
-    const updateTxMapping = (mapping: string) => {
+    const updateTxMapping = (mapping: string, count?: string) => {
         setTxMappingBase(mapping);
 
         var ret = checkInputMappingIsValid(mapping);
         var data = ret.content;
 
-        ret = CheckMapping(mapping, context.txDefaultList, context.txCount);
+
+        console.log("updateTxMapping", mapping, txDefaultList, txCount);
+        ret = CheckMapping(mapping, txDefaultList, (count === undefined) ? txCount: count);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
         setTxDir(data);
     }
 
-    const updateRxMapping = (mapping: string) => {
+    const updateRxMapping = (mapping: string, count?: string) => {
         setRxMappingBase(mapping);
 
         var ret = checkInputMappingIsValid(mapping);
         var data = ret.content;
 
-        ret = CheckMapping(mapping, context.rxDefaultList, context.rxCount);
+        ret = CheckMapping(mapping, rxDefaultList, (count === undefined) ? rxCount : count);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
         setRxDir(data);
     }
 
     const handleTxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setTxCountSimple(event.target.value);
+        setTxCount(event.target.value);
     };
 
     const handleTxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
+        console.log("QQQQ3", event.target.value);
         updateTxCount(event.target.value);
 
         var ret = CheckMappingCount(txDir, event.target.value);
@@ -512,7 +422,7 @@ export default function MainWidget(props: any) {
     };
 
     const handleRxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRxCountSimple(event.target.value);
+        setRxCount(event.target.value);
     };
 
     const handleRxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
@@ -590,7 +500,7 @@ export default function MainWidget(props: any) {
     };
     */
 
-    const handleSelectBankingScheme = (select: any) => {
+    const handleSelectBankingScheme = (select: any, config: any) => {
         var tx_table: number[] = [];
         var rx_table: number[] = [];
         if (select === 0) {
@@ -598,7 +508,7 @@ export default function MainWidget(props: any) {
             updateRxDefaultList([...Array(100).keys()]);
             return;
         }
-        var trx_list = context.bankingSchemeConfig[select]["list"];
+        var trx_list = config[select]["list"];
 
         trx_list.forEach((value, index) => {
             var ret = value.split(/\[|\]|:/);
@@ -859,7 +769,7 @@ export default function MainWidget(props: any) {
                     label="Number Tx"
                     id="standard-size-txcount"
                     variant="standard"
-                    value={txCountSimple}
+                    value={txCount}
                     error={txCountError}
                     onChange={handleTxCount}
                     onBlur={handleTxCountBlur}
@@ -873,7 +783,7 @@ export default function MainWidget(props: any) {
                     id="standard-size-rxcount"
                     variant="standard"
                     error={rxCountError}
-                    value={rxCountSimple}
+                    value={rxCount}
                     onChange={handleRxCount}
                     onBlur={handleRxCountBlur}
                     sx={{ width: "15ch" }}
@@ -982,6 +892,13 @@ export default function MainWidget(props: any) {
                     {isReady && displayPanelWithXY()}
                 </Stack>
                 {displayAlert()}
+
+                <Backdrop
+                    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={isProcessing}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
             </div>
         </ThemeProvider>
     );

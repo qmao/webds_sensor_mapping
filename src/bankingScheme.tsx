@@ -1,27 +1,27 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import { Divider, ListItemText, Radio, Stack, Typography } from "@mui/material";
-import { UserContext } from "./context";
+import { extensionConst } from "./constant"
 
 export default function CheckboxList(props: any) {
     const [checked, setChecked] = React.useState("");
     const [bankingListAll, setBankingListAll] = React.useState([]);
-
-    const context = useContext(UserContext);
+    const [bankingSchemeConfig, setBankingSchemeConfig] = React.useState([]);
+    const [selectedBankingScheme, setSelectedBankingScheme] = React.useState<string | undefined>(undefined);
 
     useEffect(() => {
-        var banking_field = Object.keys(context.bankingScheme["keys"]["Banking"]);
+        var banking_field = Object.keys(extensionConst.bankingScheme["keys"]["Banking"]);
 
-        var title = Object.values(context.bankingScheme["keys"]["Banking"]);
+        var title = Object.values(extensionConst.bankingScheme["keys"]["Banking"]);
         var pin = [];
         title.map((value) => {
             pin.push(value.slice(3));
         });
 
-        var axis_sense = context.bankingScheme["keys"]["axis-sense"];
+        var axis_sense = extensionConst.bankingScheme["keys"]["axis-sense"];
         var row = [];
         var trx_select = {};
         axis_sense.forEach(function (item) {
@@ -56,9 +56,8 @@ export default function CheckboxList(props: any) {
 
             row.push(r);
         });
-        console.log(row);
-        context.bankingSchemeConfig = JSON.parse(JSON.stringify(trx_select));
-
+        console.log("QQQQQQQ", row);
+        setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
         setBankingListAll(row);
     }, []);
 
@@ -66,17 +65,17 @@ export default function CheckboxList(props: any) {
         if (!props.expanded) return;
         if (checked === value) {
             setChecked("");
-            context.selectedBankingScheme = undefined;
+            setSelectedBankingScheme(undefined);
         } else {
             setChecked(value);
             const found = bankingListAll.find((element) => element["id"] === value);
-            context.selectedBankingScheme = found;
+            setSelectedBankingScheme(found);
         }
-        props.onSelect(value);
+        props.onSelect(value, bankingSchemeConfig);
     };
 
     function getTRxText(data: any) {
-        var title = Object.values(context.bankingScheme["keys"]["Banking"]);
+        var title = Object.values(extensionConst.bankingScheme["keys"]["Banking"]);
         var row = [];
         data.map((value, index) => {
             var pin = title[index].slice(3);
@@ -86,7 +85,7 @@ export default function CheckboxList(props: any) {
     }
 
     function getTRxCountText(axis: any) {
-        var count = context.bankingSchemeConfig[axis]["count"];
+        var count = bankingSchemeConfig[axis]["count"];
 
         return `T${count[0]},R${count[1]}`;
     }
@@ -119,8 +118,8 @@ export default function CheckboxList(props: any) {
     function dispalyBankingScheme() {
         var showList = [];
         if (!props.expanded) {
-            if (context.selectedBankingScheme !== undefined) {
-                showList = [context.selectedBankingScheme];
+            if (selectedBankingScheme !== undefined) {
+                showList = [selectedBankingScheme];
             }
         } else {
             showList = bankingListAll;
