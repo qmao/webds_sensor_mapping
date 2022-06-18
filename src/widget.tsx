@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
@@ -66,14 +66,8 @@ export default function MainWidget(props: any) {
 
     const [xTrx, setXTrx] = useState("");
 
-    const [txDir, setTxDir] = useState<number[]>([]);
-    const [rxDir, setRxDir] = useState<number[]>([]);
-
     const [txMappingBase, setTxMappingBase] = useState("");
     const [rxMappingBase, setRxMappingBase] = useState("");
-
-    const [txDim, setTxDim] = useState(TX_DEFAULT.length);
-    const [rxDim, setRxDim] = useState(RX_DEFAULT.length);
 
     const [txError, setTxError] = useState(false);
     const [rxError, setRxError] = useState(false);
@@ -86,13 +80,22 @@ export default function MainWidget(props: any) {
 
     const [expanded, setExpanded] = useState(true);
     const [isReady, setReady] = useState(false);
+    const [isProcessing, setProcessing] = useState(true);
     const [openAlert, setOpenAlert] = useState<IAlertInfo>({ state: false, message: "", severity: 'info' });
 
     const [txCount, setTxCount] = useState("0");
     const [rxCount, setRxCount] = useState("0");
-    const [txDefaultList, setTxDefaultList] = useState([...Array(100).keys()]);
-    const [rxDefaultList, setRxDefaultList] = useState([...Array(100).keys()]);
-    const [isProcessing, setProcessing] = useState(true);
+
+    const txCountRef = useRef(0);
+    const rxCountRef = useRef(0);
+
+    const txDefaultList = useRef([...Array(100).keys()]);
+    const rxDefaultList = useRef([...Array(100).keys()]);
+    const txDim = useRef(0);
+    const rxDim = useRef(0);
+    const txDir = useRef<number[]>([]);
+    const rxDir = useRef<number[]>([]);
+    const xTrxRef = useRef("");
 
     const Get = async (): Promise<string | undefined> => {
         try {
@@ -150,9 +153,9 @@ export default function MainWidget(props: any) {
         }
     };
 
-    const CheckMappingCount = (user: number[], userCount: string) => {
+    const CheckMappingCount = (user: number[], userCount: number) => {
         var ret = {} as IMappingInfo;
-        var count = parseInt(userCount, 10);
+        var count = userCount;
         if (user.length !== count) {
             ret.info = "count " + user.length + " not match " + count;
             ret.status = true;
@@ -163,7 +166,7 @@ export default function MainWidget(props: any) {
     const CheckMappingRule = (
         user: number[],
         defaultMapping: number[],
-        userCount: string
+        userCount: number
     ) => {
         var ret = {} as IMappingInfo;
         var singleCheck = [];
@@ -233,7 +236,7 @@ export default function MainWidget(props: any) {
     const CheckMapping = (
         mapping: string,
         defaultList: number[],
-        userCount: string
+        userCount: number
     ) => {
         var ret = {} as IMappingInfo;
         ret.status = false;
@@ -251,31 +254,35 @@ export default function MainWidget(props: any) {
         return ret;
     };
 
-    useEffect(() => {
-        if (xTrx === "TX") {
-            setXdir(txDir);
-        } else if (xTrx === "RX") {
-            setYdir(txDir);
+    const updateTxDir = (data: number[]) => {
+        txDir.current = data;
+        if (xTrxRef.current === "TX") {
+            setXdir(data);
+        } else if (xTrxRef.current === "RX") {
+            setYdir(data);
         }
-    }, [txDir]);
+    }
 
-    useEffect(() => {
-        if (xTrx === "TX") {
-            setYdir(rxDir);
-        } else if (xTrx === "RX") {
-            setXdir(rxDir);
+    const updateRxDir = (data: number[]) => {
+        rxDir.current = data;
+        if (xTrxRef.current === "TX") {
+            setYdir(data);
+        } else if (xTrxRef.current === "RX") {
+            setXdir(data);
         }
-    }, [rxDir]);
+    }
 
-    useEffect(() => {
-        if (xTrx === "TX") {
-            setYdir(rxDir);
-            setXdir(txDir);
-        } else if (xTrx === "RX") {
-            setXdir(rxDir);
-            setYdir(txDir);
+    const updatexTrxRef = (data: string) => {
+        xTrxRef.current = data;
+        setXTrx(data);
+        if (data === "TX") {
+            setYdir(rxDir.current);
+            setXdir(txDir.current);
+        } else if (data === "RX") {
+            setXdir(rxDir.current);
+            setYdir(txDir.current);
         }
-    }, [xTrx]);
+    }
 
     const initialize = async () => {
         props.service.packrat.cache.addPrivateConfig()
@@ -291,19 +298,19 @@ export default function MainWidget(props: any) {
                 var tx = config["imageTxes"];
                 var rx = config["imageRxes"];
 
-                setXTrx(config["txAxis"] ? "TX" : "RX");
+                updatexTrxRef(config["txAxis"] ? "TX" : "RX");
 
                 updateTxCount(txlen.toString());
                 updateRxCount(rxlen.toString());
 
-                setTxDim(tx.length);
-                setRxDim(rx.length);
+                txDim.current = tx.length;
+                rxDim.current = rx.length;
 
-                updateTxMapping(tx.slice(0, txlen).toString(), txlen.toString());
-                updateRxMapping(rx.slice(0, rxlen).toString(), rxlen.toString());
+                updateTxMapping(tx.slice(0, txlen).toString());
+                updateRxMapping(rx.slice(0, rxlen).toString());
 
                 setReady(true);
-                console.log(txDim, rxDim);
+                console.log(txDim.current, rxDim.current);
             })
             .catch(err => {
                 console.log(err);
@@ -350,13 +357,14 @@ export default function MainWidget(props: any) {
     };
 
     const updateTxCount = (data: string) => {
-        console.log("QQQQ1", data);
         setTxCount(data);
         let num = parseInt(data, 10);
         if (isNaN(num) || isNaN(Number(data)) || num < 0) {
             setTxCountError(true);
+            txCountRef.current = -1;
         } else {
             setTxCountError(false);
+            txCountRef.current = num;
         }
     }
 
@@ -365,47 +373,45 @@ export default function MainWidget(props: any) {
         let num = parseInt(data, 10);
         if (isNaN(num) || isNaN(Number(data)) || num < 0) {
             setRxCountError(true);
+            rxCountRef.current = -1;
         } else {
             setRxCountError(false);
+            rxCountRef.current = num;
         }
     }
 
     const updateTxDefaultList = (data: number[]) => {
-        setTxDefaultList(data);
+        txDefaultList.current = data;
         updateTxCount(data.length.toString());
         updateTxMapping(data.toString());
     }
 
     const updateRxDefaultList = (data: number[]) => {
-        setRxDefaultList(data);
+        rxDefaultList.current = data;
         updateRxCount(data.length.toString());
         updateRxMapping(data.toString());
     }
 
-    const updateTxMapping = (mapping: string, count?: string) => {
+    const updateTxMapping = (mapping: string) => {
         setTxMappingBase(mapping);
 
         var ret = checkInputMappingIsValid(mapping);
-        var data = ret.content;
+        updateTxDir(ret.content);
 
-
-        console.log("updateTxMapping", mapping, txDefaultList, txCount);
-        ret = CheckMapping(mapping, txDefaultList, (count === undefined) ? txCount: count);
+        ret = CheckMapping(mapping, txDefaultList.current, txCountRef.current);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
-        setTxDir(data);
     }
 
-    const updateRxMapping = (mapping: string, count?: string) => {
+    const updateRxMapping = (mapping: string) => {
         setRxMappingBase(mapping);
 
         var ret = checkInputMappingIsValid(mapping);
-        var data = ret.content;
+        updateRxDir(ret.content);
 
-        ret = CheckMapping(mapping, rxDefaultList, (count === undefined) ? rxCount : count);
+        ret = CheckMapping(mapping, rxDefaultList.current, rxCountRef.current);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
-        setRxDir(data);
     }
 
     const handleTxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,10 +419,9 @@ export default function MainWidget(props: any) {
     };
 
     const handleTxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
-        console.log("QQQQ3", event.target.value);
         updateTxCount(event.target.value);
 
-        var ret = CheckMappingCount(txDir, event.target.value);
+        var ret = CheckMappingCount(txDir.current, txCountRef.current);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
     };
@@ -427,7 +432,7 @@ export default function MainWidget(props: any) {
 
     const handleRxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
         updateRxCount(event.target.value);
-        var ret = CheckMappingCount(rxDir, event.target.value);
+        var ret = CheckMappingCount(rxDir.current, rxCountRef.current);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
     };
@@ -449,7 +454,7 @@ export default function MainWidget(props: any) {
     };
 
     const handleAxesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setXTrx(event.target.value);
+        updatexTrxRef(event.target.value);
     };
 
     const handlePanelTrxChangeBlur = (direction: string) => {
@@ -461,8 +466,8 @@ export default function MainWidget(props: any) {
         }
 
         if (
-            (xTrx === "TX" && direction === "x") ||
-            (xTrx !== "TX" && direction === "y")
+            (xTrxRef.current === "TX" && direction === "x") ||
+            (xTrxRef.current !== "TX" && direction === "y")
         ) {
             updateTxMapping(user.toString());
         } else {
