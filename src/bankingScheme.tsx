@@ -1,64 +1,111 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import { Divider, ListItemText, Radio, Stack, Typography } from "@mui/material";
 import { extensionConst } from "./constant"
+import { requestAPI } from './handler';
+
 
 export default function CheckboxList(props: any) {
-    const [checked, setChecked] = React.useState("");
-    const [bankingListAll, setBankingListAll] = React.useState([]);
-    const [bankingSchemeConfig, setBankingSchemeConfig] = React.useState([]);
-    const [selectedBankingScheme, setSelectedBankingScheme] = React.useState<string | undefined>(undefined);
+    const [checked, setChecked] = useState("");
+    const [bankingListAll, setBankingListAll] = useState([]);
+    const [bankingSchemeConfig, setBankingSchemeConfig] = useState([]);
+    const [selectedBankingScheme, setSelectedBankingScheme] = useState<string | undefined>(undefined);
+    const asic = useRef("");
+
+    const Identify = async (): Promise<string> => {
+        let partNumber: string = 'none';
+        let fw_mode: string = 'none'
+        try {
+            const reply = await requestAPI<any>('command?query=identify', {
+                method: 'GET',
+            });
+
+            fw_mode = reply['mode']
+            if (fw_mode === 'application') {
+                console.log('appliction mode');
+                partNumber = reply['partNumber'];
+                return Promise.resolve(partNumber);
+            } else {
+                return Promise.reject(`invalid fw mode: ${fw_mode}`);
+            }
+        } catch (error) {
+            console.log(error);
+            return Promise.reject(`requestAPI command?query=identify failed: ${error}`);
+        }
+    };
+
+    const initialize = async () => {
+        Identify().then((partNumber) => {
+            var asicList = extensionConst.partNumber;
+
+            for (const [key, value] of Object.entries(extensionConst.partNumber)) {
+                console.log(key, value);
+                const match = value.find(element => {
+                    if (partNumber.includes(element)) {
+                        asic.current = key;
+                        return true;
+                    }
+                });
+            }
+
+            if (asic.current === "") {
+                console.log("asic not found");
+                return;
+            }
+
+            var banking_field = Object.keys(extensionConst.bankingScheme[asic.current]["Banking"]);
+            var title = Object.values(extensionConst.bankingScheme[asic.current]["Banking"]);
+            var pin = [];
+            title.map((value: any) => {
+                pin.push(value.slice(3));
+            });
+
+            var axis_sense = extensionConst.bankingScheme[asic.current]["axis-sense"];
+            var row = [];
+            var trx_select = {};
+            axis_sense.forEach(function (item) {
+                var r = {};
+                r["id"] = item["id"];
+
+                item["mapping"].forEach(function (bk, index) {
+                    r[banking_field[index]] = bk;
+                });
+
+                //append pin range to TxRx text
+                var trx = Object.values(r).slice(1);
+                var tx_count = 0;
+                var rx_count = 0;
+                trx.forEach((element, index) => {
+                    trx[index] = element + pin[index];
+
+                    var ret = pin[index].split(/\[|\]|:/);
+                    var range1 = parseInt(ret[1], 10);
+                    var range2 = parseInt(ret[2], 10);
+                    var len = range1 - range2 + 1;
+                    if (element === "Tx") {
+                        tx_count = tx_count + len;
+                    } else {
+                        rx_count = rx_count + len;
+                    }
+                });
+                trx_select[r["id"]] = {};
+                trx_select[r["id"]]["list"] = trx;
+                trx_select[r["id"]]["count"] = [tx_count, rx_count];
+
+                row.push(r);
+            });
+            setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
+            setBankingListAll(row);
+        }).catch((err) => {
+            console.log(err);
+        })
+    }
 
     useEffect(() => {
-        var banking_field = Object.keys(extensionConst.bankingScheme["keys"]["Banking"]);
-
-        var title = Object.values(extensionConst.bankingScheme["keys"]["Banking"]);
-        var pin = [];
-        title.map((value) => {
-            pin.push(value.slice(3));
-        });
-
-        var axis_sense = extensionConst.bankingScheme["keys"]["axis-sense"];
-        var row = [];
-        var trx_select = {};
-        axis_sense.forEach(function (item) {
-            var r = {};
-            r["id"] = item["id"];
-
-            //console.log(item["mapping"]);
-            item["mapping"].forEach(function (bk, index) {
-                r[banking_field[index]] = bk;
-            });
-
-            //append pin range to TxRx text
-            var trx = Object.values(r).slice(1);
-            var tx_count = 0;
-            var rx_count = 0;
-            trx.forEach((element, index) => {
-                trx[index] = element + pin[index];
-
-                var ret = pin[index].split(/\[|\]|:/);
-                var range1 = parseInt(ret[1], 10);
-                var range2 = parseInt(ret[2], 10);
-                var len = range1 - range2 + 1;
-                if (element === "Tx") {
-                    tx_count = tx_count + len;
-                } else {
-                    rx_count = rx_count + len;
-                }
-            });
-            trx_select[r["id"]] = {};
-            trx_select[r["id"]]["list"] = trx;
-            trx_select[r["id"]]["count"] = [tx_count, rx_count];
-
-            row.push(r);
-        });
-        console.log("QQQQQQQ", row);
-        setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
-        setBankingListAll(row);
+        initialize();
     }, []);
 
     const handleToggle = (value: string) => () => {
@@ -75,7 +122,7 @@ export default function CheckboxList(props: any) {
     };
 
     function getTRxText(data: any) {
-        var title = Object.values(extensionConst.bankingScheme["keys"]["Banking"]);
+        var title: any = Object.values(extensionConst.bankingScheme[asic.current]["Banking"]);
         var row = [];
         data.map((value, index) => {
             var pin = title[index].slice(3);

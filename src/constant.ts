@@ -1,4 +1,8 @@
 export const extensionConst = {
+	partNumber: {
+		keys: ["s3908", "s3909"],
+		rio: ["s3808"]
+	},
 	bankingScheme: {
         keys: {
             Banking: {
