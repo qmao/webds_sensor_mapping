@@ -86,16 +86,18 @@ export default function MainWidget(props: any) {
     const [txCount, setTxCount] = useState("0");
     const [rxCount, setRxCount] = useState("0");
 
-    const txCountRef = useRef(0);
-    const rxCountRef = useRef(0);
+    interface IAxis {
+        dir: number[];
+        count: number;
+        dim: number;
+        bk: number[];
+    }
 
-    const txDefaultList = useRef([...Array(100).keys()]);
-    const rxDefaultList = useRef([...Array(100).keys()]);
-    const txDim = useRef(0);
-    const rxDim = useRef(0);
-    const txDir = useRef<number[]>([]);
-    const rxDir = useRef<number[]>([]);
+    const txData = useRef<IAxis>({ dir: [], count: 0, dim: 0, bk: [...Array(100).keys()] });
+    const rxData = useRef<IAxis>({ dir: [], count: 0, dim: 0, bk: [...Array(100).keys()] });
+
     const xTrxRef = useRef("");
+
 
     const Get = async (): Promise<string | undefined> => {
         try {
@@ -153,37 +155,33 @@ export default function MainWidget(props: any) {
         }
     };
 
-    const CheckMappingCount = (user: number[], userCount: number, dim: number) => {
+    const CheckMappingCount = (data: IAxis) => {
         var ret = {} as IMappingInfo;
-        var count = userCount;
-        if (user.length !== count) {
-            ret.info = "count " + user.length + " not match " + count;
+
+        if (data.dir.length !== data.count) {
+            ret.info = "count " + data.dir.length + " not match " + data.count;
             ret.status = true;
         }
 
-        if (user.length > dim) {
-            ret.info = "count " + user.length + " over dim " + dim;
+        if (data.dir.length > data.dim) {
+            ret.info = "count " + data.dir.length + " over dim " + data.dim;
             ret.status = true;
         }
         return ret;
     };
 
     const CheckMappingRule = (
-        user: number[],
-        defaultMapping: number[],
-        userCount: number,
-        dim: number
+        data: IAxis
     ) => {
         var ret = {} as IMappingInfo;
         var singleCheck = [];
         ret.status = false;
         ret.info = "";
-        ret.content = user;
         var BreakException = {};
 
         try {
-            user.forEach((value) => {
-                if (!defaultMapping.includes(value)) {
+            data.dir.forEach((value) => {
+                if (!data.bk.includes(value)) {
                     ret.info = "Invalid " + value.toString();
                     ret.status = true;
                     throw BreakException;
@@ -200,13 +198,13 @@ export default function MainWidget(props: any) {
             return ret;
         }
 
-        if (user.length > defaultMapping.length) {
-            ret.info = user.length + " over dim" + defaultMapping.length;
+        if (data.dir.length > data.bk.length) {
+            ret.info = data.dir.length + " over dim" + data.bk.length;
             ret.status = true;
             return ret;
         }
 
-        ret = CheckMappingCount(user, userCount, dim);
+        ret = CheckMappingCount(data);
 
         return ret;
     };
@@ -239,30 +237,8 @@ export default function MainWidget(props: any) {
         return ret;
     };
 
-    const CheckMapping = (
-        mapping: string,
-        defaultList: number[],
-        userCount: number,
-        dim: number
-    ) => {
-        var ret = {} as IMappingInfo;
-        ret.status = false;
-        ret.info = "";
-
-        var user = [];
-
-        ret = checkInputMappingIsValid(mapping);
-        if (ret.status === true) {
-            return ret;
-        }
-        user = ret.content;
-
-        ret = CheckMappingRule(user, defaultList, userCount, dim);
-        return ret;
-    };
-
     const updateTxDir = (data: number[]) => {
-        txDir.current = data;
+        txData.current.dir = data;
         if (xTrxRef.current === "TX") {
             setXdir(data);
         } else if (xTrxRef.current === "RX") {
@@ -271,7 +247,7 @@ export default function MainWidget(props: any) {
     }
 
     const updateRxDir = (data: number[]) => {
-        rxDir.current = data;
+        rxData.current.dir = data;
         if (xTrxRef.current === "TX") {
             setYdir(data);
         } else if (xTrxRef.current === "RX") {
@@ -283,11 +259,11 @@ export default function MainWidget(props: any) {
         xTrxRef.current = data;
         setXTrx(data);
         if (data === "TX") {
-            setYdir(rxDir.current);
-            setXdir(txDir.current);
+            setYdir(rxData.current.dir);
+            setXdir(txData.current.dir);
         } else if (data === "RX") {
-            setXdir(rxDir.current);
-            setYdir(txDir.current);
+            setXdir(rxData.current.dir);
+            setYdir(txData.current.dir);
         }
     }
 
@@ -310,14 +286,13 @@ export default function MainWidget(props: any) {
                 updateTxCount(txlen.toString());
                 updateRxCount(rxlen.toString());
 
-                txDim.current = tx.length;
-                rxDim.current = rx.length;
+                txData.current.dim = tx.length;
+                rxData.current.dim = rx.length;
 
                 updateTxMapping(tx.slice(0, txlen).toString());
                 updateRxMapping(rx.slice(0, rxlen).toString());
 
                 setReady(true);
-                console.log(txDim.current, rxDim.current);
             })
             .catch(err => {
                 console.log(err);
@@ -368,10 +343,10 @@ export default function MainWidget(props: any) {
         let num = parseInt(data, 10);
         if (isNaN(num) || isNaN(Number(data)) || num < 0) {
             setTxCountError(true);
-            txCountRef.current = -1;
+            txData.current.count = -1;
         } else {
             setTxCountError(false);
-            txCountRef.current = num;
+            txData.current.count = num;
         }
     }
 
@@ -380,21 +355,21 @@ export default function MainWidget(props: any) {
         let num = parseInt(data, 10);
         if (isNaN(num) || isNaN(Number(data)) || num < 0) {
             setRxCountError(true);
-            rxCountRef.current = -1;
+            rxData.current.count = -1;
         } else {
             setRxCountError(false);
-            rxCountRef.current = num;
+            rxData.current.count = num;
         }
     }
 
     const updateTxDefaultList = (data: number[]) => {
-        txDefaultList.current = data;
+        txData.current.bk = data;
         updateTxCount(data.length.toString());
         updateTxMapping(data.toString());
     }
 
     const updateRxDefaultList = (data: number[]) => {
-        rxDefaultList.current = data;
+        rxData.current.bk = data
         updateRxCount(data.length.toString());
         updateRxMapping(data.toString());
     }
@@ -405,7 +380,7 @@ export default function MainWidget(props: any) {
         var ret = checkInputMappingIsValid(mapping);
         updateTxDir(ret.content);
 
-        ret = CheckMapping(mapping, txDefaultList.current, txCountRef.current, txDim.current);
+        ret = CheckMappingRule(txData.current);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
     }
@@ -416,7 +391,7 @@ export default function MainWidget(props: any) {
         var ret = checkInputMappingIsValid(mapping);
         updateRxDir(ret.content);
 
-        ret = CheckMapping(mapping, rxDefaultList.current, rxCountRef.current, rxDim.current);
+        ret = CheckMappingRule(rxData.current);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
     }
@@ -428,7 +403,7 @@ export default function MainWidget(props: any) {
     const handleTxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
         updateTxCount(event.target.value);
 
-        var ret = CheckMappingCount(txDir.current, txCountRef.current, txDim.current);
+        var ret = CheckMappingCount(txData.current);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
     };
@@ -439,7 +414,7 @@ export default function MainWidget(props: any) {
 
     const handleRxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
         updateRxCount(event.target.value);
-        var ret = CheckMappingCount(rxDir.current, rxCountRef.current, rxDim.current);
+        var ret = CheckMappingCount(rxData.current);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
     };
