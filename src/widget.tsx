@@ -153,11 +153,16 @@ export default function MainWidget(props: any) {
         }
     };
 
-    const CheckMappingCount = (user: number[], userCount: number) => {
+    const CheckMappingCount = (user: number[], userCount: number, dim: number) => {
         var ret = {} as IMappingInfo;
         var count = userCount;
         if (user.length !== count) {
             ret.info = "count " + user.length + " not match " + count;
+            ret.status = true;
+        }
+
+        if (user.length > dim) {
+            ret.info = "count " + user.length + " over dim " + dim;
             ret.status = true;
         }
         return ret;
@@ -166,7 +171,8 @@ export default function MainWidget(props: any) {
     const CheckMappingRule = (
         user: number[],
         defaultMapping: number[],
-        userCount: number
+        userCount: number,
+        dim: number
     ) => {
         var ret = {} as IMappingInfo;
         var singleCheck = [];
@@ -200,7 +206,7 @@ export default function MainWidget(props: any) {
             return ret;
         }
 
-        ret = CheckMappingCount(user, userCount);
+        ret = CheckMappingCount(user, userCount, dim);
 
         return ret;
     };
@@ -236,7 +242,8 @@ export default function MainWidget(props: any) {
     const CheckMapping = (
         mapping: string,
         defaultList: number[],
-        userCount: number
+        userCount: number,
+        dim: number
     ) => {
         var ret = {} as IMappingInfo;
         ret.status = false;
@@ -250,7 +257,7 @@ export default function MainWidget(props: any) {
         }
         user = ret.content;
 
-        ret = CheckMappingRule(user, defaultList, userCount);
+        ret = CheckMappingRule(user, defaultList, userCount, dim);
         return ret;
     };
 
@@ -398,7 +405,7 @@ export default function MainWidget(props: any) {
         var ret = checkInputMappingIsValid(mapping);
         updateTxDir(ret.content);
 
-        ret = CheckMapping(mapping, txDefaultList.current, txCountRef.current);
+        ret = CheckMapping(mapping, txDefaultList.current, txCountRef.current, txDim.current);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
     }
@@ -409,7 +416,7 @@ export default function MainWidget(props: any) {
         var ret = checkInputMappingIsValid(mapping);
         updateRxDir(ret.content);
 
-        ret = CheckMapping(mapping, rxDefaultList.current, rxCountRef.current);
+        ret = CheckMapping(mapping, rxDefaultList.current, rxCountRef.current, rxDim.current);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
     }
@@ -421,7 +428,7 @@ export default function MainWidget(props: any) {
     const handleTxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
         updateTxCount(event.target.value);
 
-        var ret = CheckMappingCount(txDir.current, txCountRef.current);
+        var ret = CheckMappingCount(txDir.current, txCountRef.current, txDim.current);
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
     };
@@ -432,7 +439,7 @@ export default function MainWidget(props: any) {
 
     const handleRxCountBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
         updateRxCount(event.target.value);
-        var ret = CheckMappingCount(rxDir.current, rxCountRef.current);
+        var ret = CheckMappingCount(rxDir.current, rxCountRef.current, rxDim.current);
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
     };

@@ -39,8 +39,6 @@ export default function CheckboxList(props: any) {
 
     const initialize = async () => {
         Identify().then((partNumber) => {
-            var asicList = extensionConst.partNumber;
-
             for (const [key, value] of Object.entries(extensionConst.partNumber)) {
                 console.log(key, value);
                 const match = value.find(element => {
@@ -49,6 +47,7 @@ export default function CheckboxList(props: any) {
                         return true;
                     }
                 });
+                console.log(match);
             }
 
             if (asic.current === "") {
