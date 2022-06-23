@@ -98,10 +98,18 @@ export default function CheckboxList(props: any) {
             });
             setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
             setBankingListAll(row);
+
+            props.onInit(row, trx_select);
         }).catch((err) => {
             console.log(err);
         })
     }
+
+    useEffect(() => {
+        console.log("props.defaultSelect", props.defaultSelect);
+        setChecked(props.defaultSelect);
+        props.onSelect(props.defaultSelect, bankingSchemeConfig, false);
+    }, [props.defaultSelect]);
 
     useEffect(() => {
         initialize();

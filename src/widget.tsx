@@ -86,6 +86,8 @@ export default function MainWidget(props: any) {
     const [txCount, setTxCount] = useState("0");
     const [rxCount, setRxCount] = useState("0");
 
+    const [defaultSelect, setDefaultSelect] = useState("");
+
     interface IAxis {
         dir: number[];
         count: number;
@@ -97,6 +99,13 @@ export default function MainWidget(props: any) {
     const rxData = useRef<IAxis>({ dir: [], count: 0, dim: 0, bk: [...Array(100).keys()] });
 
     const xTrxRef = useRef("");
+
+    interface IBankingSchemeUnit {
+        id: string;
+        tx: number[];
+        rx: number[];
+    }
+    const bklist = useRef<IBankingSchemeUnit[]>([]);
 
 
     const Get = async (): Promise<string | undefined> => {
@@ -280,6 +289,8 @@ export default function MainWidget(props: any) {
                 var rxlen = config["rxCount"];
                 var tx = config["imageTxes"];
                 var rx = config["imageRxes"];
+
+                findMatchBankingScheme(tx, rx);
 
                 updatexTrxRef(config["txAxis"] ? "TX" : "RX");
 
@@ -486,18 +497,38 @@ export default function MainWidget(props: any) {
       setZoomIn(!zoomIn);
     };
     */
+    const findDuplicatesCount = (array1: number[], array2: number[]) => {
+        var duplicates = array1.filter(function (val) {
+            return array2.indexOf(val) != -1;
+        });
+        return duplicates.length;
+    }
 
-    const handleSelectBankingScheme = (select: any, config: any, updateMapping: boolean) => {
-        var tx_table: number[] = [];
-        var rx_table: number[] = [];
+    const findMatchBankingScheme = (tx: number[], rx: number[]) => {
+        const match = bklist.current.map((item) => {
+            var txMatch = findDuplicatesCount(item.tx, tx);
+            var rxMatch = findDuplicatesCount(item.rx, rx);
+            return (txMatch + rxMatch)
+        });
 
-        if (updateMapping) {
-            if (select === 0) {
-                updateTxDefaultList([...Array(100).keys()]);
-                updateRxDefaultList([...Array(100).keys()]);
-                return;
-            }
-            var trx_list = config[select]["list"];
+        const max = Math.max(...match);
+        const index = match.indexOf(max);
+
+        txData.current.bk = bklist.current[index].tx;
+        rxData.current.bk = bklist.current[index].rx;
+
+        setDefaultSelect(bklist.current[index].id);
+    };
+
+    const handleBankingSchemeInit = (bkList: any, config: any) => {
+        console.log("bkList", bkList);
+        console.log("config", config);
+
+        for (const [key, kvalue] of Object.entries(config)) {
+            var trx_list = kvalue["list"];
+
+            var unit: IBankingSchemeUnit = { id: "", tx: [], rx: [] };
+            unit.id = key;
 
             trx_list.forEach((value, index) => {
                 var ret = value.split(/\[|\]|:/);
@@ -508,14 +539,28 @@ export default function MainWidget(props: any) {
                 var nlist: number[] = Array.from({ length: len }, (_, i) => i + range2);
 
                 if (name === "Tx") {
-                    tx_table = tx_table.concat(nlist);
+                    unit.tx = unit.tx.concat(nlist);
                 } else if (name === "Rx") {
-                    rx_table = rx_table.concat(nlist);
+                    unit.rx = unit.rx.concat(nlist);
                 }
             });
+            bklist.current.push(unit);
+        }
+    };
 
-            updateTxDefaultList(tx_table);
-            updateRxDefaultList(rx_table);
+    const handleSelectBankingScheme = (select: any, config: any, updateMapping: boolean) => {
+
+        if (updateMapping) {
+            if (select === 0) {
+                updateTxDefaultList([...Array(100).keys()]);
+                updateRxDefaultList([...Array(100).keys()]);
+                return;
+            }
+
+            var unit = bklist.current.find(item => item.id === select);
+
+            updateTxDefaultList(unit.tx);
+            updateRxDefaultList(unit.rx);
         }
     };
 
@@ -807,6 +852,8 @@ export default function MainWidget(props: any) {
                     <BankingScheme
                         expanded={expanded}
                         onSelect={handleSelectBankingScheme}
+                        onInit={handleBankingSchemeInit}
+                        defaultSelect={defaultSelect}
                     />
                 </Paper>
             </div>
