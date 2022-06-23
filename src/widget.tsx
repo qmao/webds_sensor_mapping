@@ -511,6 +511,9 @@ export default function MainWidget(props: any) {
             return (txMatch + rxMatch)
         });
 
+        if (match.length === 0)
+            return;
+
         const max = Math.max(...match);
         const index = match.indexOf(max);
 
