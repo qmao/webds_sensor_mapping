@@ -117,7 +117,7 @@ export default function CheckboxList(props: any) {
             const found = bankingListAll.find((element) => element["id"] === value);
             setSelectedBankingScheme(found);
         }
-        props.onSelect(value, bankingSchemeConfig);
+        props.onSelect(value, bankingSchemeConfig, true);
     };
 
     function getTRxText(data: any) {

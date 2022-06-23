@@ -164,7 +164,7 @@ export default function MainWidget(props: any) {
         }
 
         if (data.dir.length > data.dim) {
-            ret.info = "count " + data.dir.length + " over dim " + data.dim;
+            ret.info = "count " + data.dir.length + " over dimension " + data.dim;
             ret.status = true;
         }
         return ret;
@@ -309,7 +309,7 @@ export default function MainWidget(props: any) {
         initialize();
     }, []);
 
-    const handleApplyBankingScheme = (commit: boolean) => {
+    const handleApplyBankingScheme = (toFlash: boolean) => {
         /*
         var settingRegistry: ISettingRegistry = props.settingRegistry;
         async function set() {
@@ -327,7 +327,7 @@ export default function MainWidget(props: any) {
 
         WriteToRAM()
             .then((ret) => {
-                if (commit)
+                if (toFlash)
                     return WriteToFlash();
                 else
                     return ret;
@@ -487,33 +487,36 @@ export default function MainWidget(props: any) {
     };
     */
 
-    const handleSelectBankingScheme = (select: any, config: any) => {
+    const handleSelectBankingScheme = (select: any, config: any, updateMapping: boolean) => {
         var tx_table: number[] = [];
         var rx_table: number[] = [];
-        if (select === 0) {
-            updateTxDefaultList([...Array(100).keys()]);
-            updateRxDefaultList([...Array(100).keys()]);
-            return;
-        }
-        var trx_list = config[select]["list"];
 
-        trx_list.forEach((value, index) => {
-            var ret = value.split(/\[|\]|:/);
-            var name = ret[0];
-            var range1 = parseInt(ret[1], 10);
-            var range2 = parseInt(ret[2], 10);
-            var len = range1 - range2 + 1;
-            var nlist: number[] = Array.from({ length: len }, (_, i) => i + range2);
-
-            if (name === "Tx") {
-                tx_table = tx_table.concat(nlist);
-            } else if (name === "Rx") {
-                rx_table = rx_table.concat(nlist);
+        if (updateMapping) {
+            if (select === 0) {
+                updateTxDefaultList([...Array(100).keys()]);
+                updateRxDefaultList([...Array(100).keys()]);
+                return;
             }
-        });
+            var trx_list = config[select]["list"];
 
-        updateTxDefaultList(tx_table);
-        updateRxDefaultList(rx_table);
+            trx_list.forEach((value, index) => {
+                var ret = value.split(/\[|\]|:/);
+                var name = ret[0];
+                var range1 = parseInt(ret[1], 10);
+                var range2 = parseInt(ret[2], 10);
+                var len = range1 - range2 + 1;
+                var nlist: number[] = Array.from({ length: len }, (_, i) => i + range2);
+
+                if (name === "Tx") {
+                    tx_table = tx_table.concat(nlist);
+                } else if (name === "Rx") {
+                    rx_table = rx_table.concat(nlist);
+                }
+            });
+
+            updateTxDefaultList(tx_table);
+            updateRxDefaultList(rx_table);
+        }
     };
 
     const handleAccordionExpend = () => {
@@ -764,6 +767,7 @@ export default function MainWidget(props: any) {
                     InputProps={{
                         readOnly: false
                     }}
+                    helperText={`Dimension ${txData.current.dim}`}
                 />
                 <TextField
                     label="Number Rx"
@@ -777,6 +781,7 @@ export default function MainWidget(props: any) {
                     InputProps={{
                         readOnly: false
                     }}
+                    helperText={`Dimension ${rxData.current.dim}`}
                 />
             </Stack>
         );
