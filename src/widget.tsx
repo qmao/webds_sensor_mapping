@@ -110,7 +110,7 @@ export default function MainWidget(props: any) {
 
     const Get = async (): Promise<string | undefined> => {
         try {
-            let url = "config?type=static";
+            let url = "config/static";
 
             const reply = await requestAPI<any>(url, {
                 method: "GET"
@@ -135,7 +135,7 @@ export default function MainWidget(props: any) {
         };
 
         try {
-            const reply = await requestAPI<any>("config", {
+            const reply = await requestAPI<any>("config/static", {
                 body: JSON.stringify(dataToSend),
                 method: "POST"
             });
