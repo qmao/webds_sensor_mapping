@@ -56,7 +56,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           let content = new ShellWidget(service, settingRegistry);
 
           widget = new WebDSWidget<ShellWidget>({ content });
-          widget.id = 'sensor_mapping';
+          widget.id = 'webds_sensor_mapping_widget';
           widget.title.label = extension_string;
           widget.title.closable = true;
           widget.title.icon = extensionSensorMappingIcon;
