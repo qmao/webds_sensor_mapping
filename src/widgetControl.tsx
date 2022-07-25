@@ -19,9 +19,9 @@ export default function WidgetControl(props: any) {
         if (step === extensionConst.steps + 1) {
             setActiveStep(0);
             stepStatus.current = Array(extensionConst.steps).fill(0);
-            props.updateStepStatus(0, stepStatus.current);
+            props.updateStep(0);
         } else {
-            props.updateStepStatus(step, stepStatus.current);
+            props.updateStep(step);
             setActiveStep(step);
         }
     };
@@ -36,8 +36,8 @@ export default function WidgetControl(props: any) {
 
     const handleApply = () => {
         let step = activeStep;
-        let stepNew = activeStep + 1;
-        updateStep(stepNew);
+        //let stepNew = activeStep + 1;
+        //updateStep(stepNew);
 
         const elem = document.getElementById(extensionConst.buttonApplyId);
         elem.textContent = step.toString();

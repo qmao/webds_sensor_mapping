@@ -31,7 +31,7 @@ export default function WidgetContent(props: any) {
             <Stack direction="row" justifyContent="flex-start" alignItems="stretch">
                 <VerticalStepper
                     service={props.service}
-                    stepStatus={props.stepStatus}
+                    step={props.step}
                     updateStep={updateStep}
                     updateX={updateX}
                     updateY={updateY}

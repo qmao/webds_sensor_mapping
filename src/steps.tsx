@@ -50,7 +50,7 @@ interface ISteppr {
     updateX: any;
     updateY: any;
     updateStep: any;
-    stepStatus: any;
+    step: any;
     service: any;
 }
 
@@ -61,7 +61,7 @@ interface IAlertInfo {
 }
 
 export default function VerticalStepper(props: ISteppr) {
-    const [activeStep, setActiveStep] = React.useState(props.stepStatus.step);
+    const [activeStep, setActiveStep] = React.useState(props.step);
     const [stepStatus, setStepStatus] = useState(
         Array(extensionConst.steps).fill(0)
     );
@@ -105,10 +105,10 @@ export default function VerticalStepper(props: ISteppr) {
     });
 
     useEffect(() => {
-        setActiveStep(props.stepStatus.step);
+        setActiveStep(props.step);
         let enable = false;
         if (
-            props.stepStatus.step < extensionConst.steps ||
+            props.step < extensionConst.steps ||
             stepStatus.every((n) => n !== 0)
         ) {
             enable = true;
@@ -117,7 +117,7 @@ export default function VerticalStepper(props: ISteppr) {
         //fixme
         (document.getElementById(extensionConst.buttonControlId) as HTMLButtonElement).disabled = !enable;
 
-    }, [props.stepStatus]);
+    }, [props.step]);
 
     const Identify = async (): Promise<string> => {
         let partNumber: string = "none";
@@ -687,34 +687,54 @@ export default function VerticalStepper(props: ISteppr) {
         );
     }
 
-    function onApply(event: any) {
-        const toFlash = false;
+    async function onApply(event: any) {
         console.log("On Apply", event.currentTarget.textContent);
         let index = parseInt(event.currentTarget.textContent, 10);
 
-        console.log("QQQQ", index, extensionConst.steps);
-        if (index === extensionConst.steps) {
-            //done
-            let newStatus = Array(extensionConst.steps).fill(0);
-            setStepStatus(newStatus);
-        } else {
-            //apply
-            let newStatus = stepStatus;
-            newStatus[index] = 1;
-            setStepStatus(newStatus);
-        }
-
-        WriteToRAM()
+        await WriteToRAM()
             .then((ret) => {
-                if (toFlash)
+                if (index === extensionConst.steps) {
                     return WriteToFlash();
+                }
                 else
                     return ret;
             }).then((ret) => {
-                console.log(ret);
-                //setOpenAlert({ state: true, severity: 'success', message: "Success" });
+                //console.log(ret);
+
+                if (index === extensionConst.steps) {
+                    //done pass
+                    let newStatus = Array(extensionConst.steps).fill(0);
+                    setStepStatus(newStatus);
+                    setOpenAlert({ state: true, severity: 'success', message: "Success" });
+
+                    //fixme handleStep not work
+                    setActiveStep(0);
+                    props.updateStep(0);
+                } else {
+                    //apply pass
+                    let newStatus = stepStatus;
+                    newStatus[index] = 1;
+                    setStepStatus(newStatus);
+                    
+                    //fixme handleStep not work
+                    setActiveStep(index + 1);
+                    props.updateStep(index + 1);
+                }
             })
-            .catch((e) => setOpenAlert({ state: true, severity: 'error', message: e.toString() }));
+            .catch((e) => {
+                if (index === extensionConst.steps) {
+                    //done fail
+                    let newStatus = Array(extensionConst.steps).fill(0);
+                    setStepStatus(newStatus);
+                } else {
+                    //apply fail
+                    let newStatus = stepStatus;
+                    newStatus[index] = 0;
+                    setStepStatus(newStatus);
+                }
+
+                setOpenAlert({ state: true, severity: 'error', message: e.toString() })
+            });
     }
 
     function displayStepIcon(index: number) {
@@ -726,7 +746,7 @@ export default function VerticalStepper(props: ISteppr) {
             color: "inherit"
         };
 
-        if (index === props.stepStatus.step) {
+        if (index === props.step) {
             param.bgcolor = "#007dc3";
         }
 
@@ -734,7 +754,7 @@ export default function VerticalStepper(props: ISteppr) {
             param.color = "green";
         }
 
-        if (props.stepStatus.step === extensionConst.steps) {
+        if (props.step === extensionConst.steps) {
             //check step finish when DONE
             param.color = "#inherit";
             if (stepStatus[index] === 1) {

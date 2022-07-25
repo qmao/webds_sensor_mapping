@@ -17,10 +17,7 @@ const WIDGET_HEIGHT_TITLE = 70;
 const WIDGET_HEIGHT_CONTROLS = 70;
 
 export default function MainWidget(props: any) {
-    const [stepStatus, setStepStatus] = useState({
-        step: 0,
-        status: Array(100).fill(0)
-    });
+    const [step, setStep] = useState(0);
 
     function ShowTitle(title: string) {
         return (
@@ -48,25 +45,15 @@ export default function MainWidget(props: any) {
         );
     }
 
-    function updateStepStatus(step: number, status: number[]) {
-        let data = stepStatus;
-        data.step = step;
-        data.status = status;
-        setStepStatus(JSON.parse(JSON.stringify(data)));
-        console.log("ROOT updateStatus", data);
-    }
-
     function updateStep(step: number) {
-        let data = stepStatus;
-        data.step = step;
-        setStepStatus(JSON.parse(JSON.stringify(data)));
+        setStep(step);
         console.log("ROOT updateStep", step);
     }
 
     function ShowContent() {
         return (
             <>
-                <WidgetContent service={props.service} stepStatus={stepStatus} updateStep={updateStep} />
+                <WidgetContent service={props.service} step={step} updateStep={updateStep} />
             </>
         );
     }
@@ -75,8 +62,8 @@ export default function MainWidget(props: any) {
         return (
             <>
                 <WidgetControl
-                    step={stepStatus.step}
-                    updateStepStatus={updateStepStatus}
+                    step={step}
+                    updateStep={updateStep}
                 />
             </>
         );
