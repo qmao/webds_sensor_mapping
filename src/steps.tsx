@@ -158,16 +158,7 @@ export default function VerticalStepper(props: ISteppr) {
         }
     };
 
-    const WriteToRAM = async (): Promise<string | undefined> => {
-        var dataToSend = {
-            txCount: txCount,
-            rxCount: rxCount,
-            imageRxes: xdir,
-            imageTxes: ydir,
-            numColumns: txCount,
-            numRows: rxCount
-        };
-
+    const WriteToRAM = async (dataToSend: any): Promise<string | undefined> => {
         try {
             const reply = await requestAPI<any>("config/static", {
                 body: JSON.stringify(dataToSend),
@@ -219,7 +210,7 @@ export default function VerticalStepper(props: ISteppr) {
         props.updateY(ydir);
     }, [ydir]);
 
-    const handleStep = (step: number) => () => {
+    function handleStep(step: number) {
         setActiveStep(step);
         props.updateStep(step);
     };
@@ -514,7 +505,7 @@ export default function VerticalStepper(props: ISteppr) {
 
                 findMatchBankingScheme(tx, rx);
 
-                updatexTrxRef(config["txAxis"] ? "TX" : "RX");
+                updatexTrxRef(config["txAxis"] ? "RX" : "TX" );
 
                 updateTxCount(txlen.toString());
                 updateRxCount(rxlen.toString());
@@ -689,10 +680,43 @@ export default function VerticalStepper(props: ISteppr) {
     }
 
     async function onApply(event: any) {
-        console.log("On Apply", event.currentTarget.textContent);
+        //console.log("On Apply", event.currentTarget.textContent);
         let index = parseInt(event.currentTarget.textContent, 10);
+        var dataToSend = {};
 
-        await WriteToRAM()
+        switch (index) {
+            case 0:
+                dataToSend = {
+                    txCount: txCount,
+                    rxCount: rxCount
+                };
+                break;
+            case 1:
+                let newStatus = stepStatus;
+                newStatus[index] = 1;
+                setStepStatus(newStatus);
+                handleStep(index + 1);
+                return;
+            case 2:
+                dataToSend = {
+                    imageRxes: xdir,
+                    imageTxes: ydir,
+                    numColumns: txCount,
+                    numRows: rxCount
+                };
+                break;
+            case 3:
+                dataToSend = {
+                    txAxis: (xTrxRef.current === "TX") ? 0 : 1
+                };
+                break;
+            default:
+                break;
+        }
+
+        console.log("dataToSend", dataToSend);
+
+        await WriteToRAM(dataToSend)
             .then((ret) => {
                 if (index === extensionConst.steps) {
                     return WriteToFlash();
@@ -701,25 +725,20 @@ export default function VerticalStepper(props: ISteppr) {
                     return ret;
             }).then((ret) => {
                 //console.log(ret);
-
                 if (index === extensionConst.steps) {
                     //done pass
                     let newStatus = Array(extensionConst.steps).fill(0);
                     setStepStatus(newStatus);
                     setOpenAlert({ state: true, severity: 'success', message: "Success" });
 
-                    //fixme handleStep not work
-                    setActiveStep(0);
-                    props.updateStep(0);
+                    handleStep(0);
                 } else {
                     //apply pass
                     let newStatus = stepStatus;
                     newStatus[index] = 1;
                     setStepStatus(newStatus);
-                    
-                    //fixme handleStep not work
-                    setActiveStep(index + 1);
-                    props.updateStep(index + 1);
+
+                    handleStep(index + 1);
                 }
             })
             .catch((e) => {
@@ -870,7 +889,7 @@ export default function VerticalStepper(props: ISteppr) {
                     <Step key={step.label}>
                         <Button
                             variant="text"
-                            onClick={handleStep(index)}
+                            onClick={() => handleStep(index)}
                             style={{ justifyContent: "flex-start" }}
                             sx={{ pl: 0, width: 400 }}
                         >

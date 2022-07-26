@@ -47,7 +47,6 @@ export default function MainWidget(props: any) {
 
     function updateStep(step: number) {
         setStep(step);
-        console.log("ROOT updateStep", step);
     }
 
     function ShowContent() {
