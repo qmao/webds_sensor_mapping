@@ -9,6 +9,7 @@ import { extensionConst } from "./constant";
 
 export default function WidgetControl(props: any) {
     const [activeStep, setActiveStep] = useState(0);
+    const [disableButton, setDisableButton] = useState(false);
     const stepStatus = useRef<number[]>(Array(extensionConst.steps).fill(0));
 
     useEffect(() => {
@@ -46,6 +47,7 @@ export default function WidgetControl(props: any) {
 
     function showStep() {
         return (
+            <>
             <Stack
                 direction="row"
                 justifyContent="space-between"
@@ -63,9 +65,9 @@ export default function WidgetControl(props: any) {
         </Button>
 
                 <Button
-                    id={extensionConst.buttonControlId}
                     onClick={handleApply}
                     sx={{ width: 160 }}
+                    disabled={disableButton}
                 >
                     {activeStep === extensionConst.steps ? "Done" : "Apply"}
                 </Button>
@@ -79,7 +81,17 @@ export default function WidgetControl(props: any) {
                     Next
           <KeyboardArrowRight />
                 </Button>
-            </Stack>
+                </Stack>
+
+                <Button
+                    id={extensionConst.buttonControlId}
+                    sx={{ width: 0, height: 0, p: 0, m: 0, b: 0 }}
+                    onClick={(e) => {
+                        if (e.currentTarget.textContent === "true") setDisableButton(false);
+                        else setDisableButton(true);
+                    }}
+                > "true" </Button>
+                </>
         );
     }
 

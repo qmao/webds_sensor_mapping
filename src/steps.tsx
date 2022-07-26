@@ -114,8 +114,9 @@ export default function VerticalStepper(props: ISteppr) {
             enable = true;
         }
 
-        //fixme
-        (document.getElementById(extensionConst.buttonControlId) as HTMLButtonElement).disabled = !enable;
+        const elem = (document.getElementById(extensionConst.buttonControlId) as HTMLButtonElement);
+        elem.textContent = enable.toString();
+        elem.click();
 
     }, [props.step]);
 
@@ -137,7 +138,7 @@ export default function VerticalStepper(props: ISteppr) {
             }
         } catch (error) {
             console.log(error);
-            return Promise.resolve("s3908");
+            return Promise.reject(`identify failed: ${error.toString()}`);
         }
     };
 
