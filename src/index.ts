@@ -43,7 +43,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let widget: WebDSWidget;
     const { commands, shell } = app;
     const command = CommandIDs.sensor_mapping;
-    const category = 'WebDS - Tuning'
+    const category = 'Touch - Config Library'
     const extension_string = 'Sensor Mapping';
 
 
@@ -75,7 +75,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     // Add launcher
     launcher.add({
       command: command,
-      category: category
+      category: category,
+	  rank: 30
     });
 
     let tracker = new WidgetTracker<WebDSWidget>({ namespace: 'webds_sensor_mapping' });
