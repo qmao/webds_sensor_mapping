@@ -361,18 +361,16 @@ export default function VerticalStepper(props: ISteppr) {
 
     const updateTxDefaultList = (data: number[]) => {
         txData.current.bk = data;
-        //do not update mapping when select banking
+        //do not update tx count when select banking
         //updateTxCount(data.length.toString());
-        //updateTxMapping(data.toString());
-        updateTxMapping(txData.current.dir.toString());
+        updateTxMapping(data.toString());
     };
 
     const updateRxDefaultList = (data: number[]) => {
         rxData.current.bk = data;
-        //do not update mapping when select banking
+        //do not update rx count when select banking
         //updateRxCount(data.length.toString());
-        //updateRxMapping(data.toString());
-        updateRxMapping(rxData.current.dir.toString());
+        updateRxMapping(data.toString());
     };
 
     const handleSelectBankingScheme = (
