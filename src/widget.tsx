@@ -12,7 +12,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import WidgetContent from "./widgetContent";
 import WidgetControl from "./widgetControl";
 
-const WIDGET_WIDTH = 800;
+const WIDGET_WIDTH = 900;
 const WIDGET_HEIGHT_TITLE = 70;
 const WIDGET_HEIGHT_CONTROLS = 70;
 

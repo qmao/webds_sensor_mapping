@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import {
     Divider,
-    ListItemText,
     Radio,
     Stack,
     Typography,
@@ -17,15 +13,29 @@ import { extensionConst } from "./constant";
 
 const BANKING_ITEM_HEIGHT = 30;
 const BANKING_ITEM_LIST_HEIGHT = BANKING_ITEM_HEIGHT + 2;
+const BANKING_LIST_WIDTH = 420;
+const BANKING_ITEM_LIST_WIDTH = BANKING_LIST_WIDTH - 100;
 
 export default function BankingScheme(props: any) {
     const [checked, setChecked] = useState("");
+    const [title, setTitle] = useState([]);
     const [selectedBankingScheme, setSelectedBankingScheme] = useState<
         string | undefined
     >(undefined);
 
     useEffect(() => {
-        //console.log("props.defaultSelect", props.defaultSelect);
+        var title: any = Object.values(
+            extensionConst.bankingScheme[props.asic]["Banking"]
+        );
+        var t = [];
+        t = title.map((value) => {
+            let data = value.slice(3);
+            return data;
+        });
+        setTitle(t);
+    }, []);
+
+    useEffect(() => {
         setChecked(props.defaultSelect);
         props.onSelect(props.defaultSelect, props.bankingSchemeConfig, false);
     }, [props.defaultSelect]);
@@ -67,18 +77,13 @@ export default function BankingScheme(props: any) {
         return (
             <Stack>
                 <Tooltip title={info} placement="top">
-                    <Button
-                        variant="text"
-                        sx={{ height: BANKING_ITEM_HEIGHT, p: 0, b: 0, m: 0 }}
+                    <Typography
+                        variant="overline"
+                        key={`list-trx-${id0}-${id1}-${id2}`}
+                        sx={{ textAlign: "center" }}
                     >
-                        <Typography
-                            variant="overline"
-                            key={`list-trx-${id0}-${id1}-${id2}`}
-                            sx={{ textAlign: "center" }}
-                        >
-                            {content}
-                        </Typography>
-                    </Button>
+                        {content}
+                    </Typography>
                 </Tooltip>
             </Stack>
         );
@@ -93,30 +98,14 @@ export default function BankingScheme(props: any) {
     ) {
         return (
             <Stack direction="row">
-                <Button
-                    variant="text"
-                    sx={{ height: BANKING_ITEM_HEIGHT, p: 0, b: 0, m: 0 }}
+                <Typography
+                    variant="overline"
+                    key={`list-trx-${id0}-${id1}-${id2}`}
+                    sx={{ textAlign: "center" }}
                 >
-                    <Typography
-                        variant="overline"
-                        key={`list-trx-${id0}-${id1}-${id2}`}
-                        sx={{ textAlign: "center" }}
-                    >
-                        {up}
-                    </Typography>
-                </Button>
-                <Button
-                    variant="text"
-                    sx={{ height: BANKING_ITEM_HEIGHT, p: 0, b: 0, m: 0 }}
-                >
-                    <Typography
-                        variant="overline"
-                        key={`list-pin-${id0}-${id1}-${id2}`}
-                        sx={{ textAlign: "center" }}
-                    >
-                        {down}
-                    </Typography>
-                </Button>
+                    {up}
+                    {down}
+                </Typography>
             </Stack>
         );
     }
@@ -148,27 +137,47 @@ export default function BankingScheme(props: any) {
         }
         return (
             <Paper square elevation={1}>
+                <Stack direction="row">
+                    <Paper elevation={0} sx={{ width: 100 }} />
+                    <Stack
+                        direction="row"
+                        justifyContent="space-around"
+                        alignItems="center"
+                        sx={{ width: BANKING_ITEM_LIST_WIDTH }}
+                    >
+                        {title.map((value) => {
+                            return (
+                                <Typography
+                                    key={`list-title-${value}`}
+                                    sx={{ fontSize: 12 }}
+                                >
+                                    {value}
+                                </Typography>
+                            );
+                        })}
+                    </Stack>
+                    <Paper elevation={0} sx={{ pl: 1 }} />
+                </Stack>
+                <Divider />
                 {showList.map((value, index) => {
                     var axis_sense = value["id"];
                     const labelId = `checkbox-list-label-${axis_sense}-${index}`;
                     return (
-                        <ListItem
+                        <Stack
                             key={`listitem-root-${axis_sense}-${index}`}
-                            disablePadding
-                            divider
                             sx={{ height: BANKING_ITEM_LIST_HEIGHT, p: 0, b: 0, m: 0 }}
-                        /*sx={{ border: "1px solid grey", borderRadius: "4px" }}*/
+                            spacing={2}
                         >
-                            <ListItemButton
+                            <Button
+                                variant="text"
                                 key={`listitem-button-${axis_sense}-${index}`}
-                                role={undefined}
                                 onClick={handleToggle(axis_sense)}
-                                dense
-                                sx={{ m: 0 }}
+                                sx={{ m: 0, p: 0, width: BANKING_LIST_WIDTH }}
                             >
-                                <ListItemIcon
-                                    key={`listitem-icon-${axis_sense}-${index}`}
-                                    sx={{ minWidth: 20 }}
+                                <Stack
+                                    direction="row"
+                                    justifyContent="flex-start"
+                                    alignItems="center"
                                 >
                                     <Radio
                                         id={labelId}
@@ -177,58 +186,54 @@ export default function BankingScheme(props: any) {
                                         value={axis_sense}
                                         name="radio-buttons"
                                         inputProps={{ "aria-label": "B" }}
-                                        sx={{ width: 0, p: 0, m: 0, b: 0 }}
                                     />
-                                </ListItemIcon>
 
-                                <ListItemText
-                                    key={`list-trx-count-root-${axis_sense}-${index}`}
-                                    sx={{
-                                        width: 35,
-                                        pr: 1,
-                                        height: BANKING_ITEM_LIST_HEIGHT,
-                                        p: 0,
-                                        b: 0,
-                                        m: 0
-                                    }}
-                                >
-                                    <Typography
-                                        variant="overline"
-                                        key={`list-trx-count-${axis_sense}-${index}`}
-                                        sx={{ textAlign: "center", fontSize: 12 }}
+                                    <Stack
+                                        direction="row"
+                                        key={`list-trx-count-root-${axis_sense}-${index}`}
+                                        sx={{
+                                            height: BANKING_ITEM_LIST_HEIGHT,
+                                            b: 0,
+                                            m: 0
+                                        }}
                                     >
-                                        {getTRxCountText(axis_sense)}
-                                    </Typography>
-                                </ListItemText>
-
-                                <Divider
-                                    orientation="vertical"
-                                    flexItem
-                                    key={`list-divider-${index}-${axis_sense}`}
-                                />
-                                {showBankingTRx(value).map((content, indexSub) => {
-                                    return (
-                                        <ListItemText
-                                            key={`listitem-${axis_sense}-${indexSub}-${content[1]}`}
-                                            sx={{
-                                                height: BANKING_ITEM_LIST_HEIGHT,
-                                                p: 0,
-                                                b: 0,
-                                                m: 0
-                                            }}
+                                        <Typography
+                                            variant="overline"
+                                            key={`list-trx-count-${axis_sense}-${index}`}
+                                            sx={{ textAlign: "center", width: 50 }}
                                         >
-                                            {showItem(
-                                                content[0],
-                                                content[1],
-                                                axis_sense,
-                                                `${indexSub}`,
-                                                content[1]
-                                            )}
-                                        </ListItemText>
-                                    );
-                                })}
-                            </ListItemButton>
-                        </ListItem>
+                                            {getTRxCountText(axis_sense)}
+                                        </Typography>
+                                        <Divider
+                                            orientation="vertical"
+                                            flexItem
+                                            key={`list-divider-${index}-${axis_sense}`}
+                                        />
+                                    </Stack>
+
+                                    <Stack
+                                        direction="row"
+                                        justifyContent="space-around"
+                                        alignItems="center"
+                                        sx={{ width: BANKING_ITEM_LIST_WIDTH }}
+                                    >
+                                        {showBankingTRx(value).map((content, indexSub) => {
+                                            return (
+                                                <>
+                                                    {showItem(
+                                                        content[0],
+                                                        content[1],
+                                                        axis_sense,
+                                                        `${indexSub}`,
+                                                        content[1]
+                                                    )}
+                                                </>
+                                            );
+                                        })}
+                                    </Stack>
+                                </Stack>
+                            </Button>
+                        </Stack>
                     );
                 })}
             </Paper>
@@ -237,7 +242,9 @@ export default function BankingScheme(props: any) {
 
     return (
         <Stack alignItems="center">
-            <List sx={{ width: 350, bgcolor: "background.paper", p: 0 }}>
+            <List
+                sx={{ width: BANKING_LIST_WIDTH, bgcolor: "background.paper", p: 0 }}
+            >
                 {dispalyBankingScheme()}
             </List>
         </Stack>

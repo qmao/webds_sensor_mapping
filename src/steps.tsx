@@ -882,16 +882,16 @@ export default function VerticalStepper(props: ISteppr) {
             direction="column"
             justifyContent="space-between"
             spacing={2}
-            sx={{ width: 400 }}
+            sx={{ width: 500 }}
         >
-            <Stepper nonLinear activeStep={activeStep} orientation="vertical">
+            <Stepper nonLinear activeStep={activeStep} orientation="vertical" sx={{pl: 2, pt: 2}}>
                 {steps.map((step, index) => (
                     <Step key={step.label}>
                         <Button
                             variant="text"
                             onClick={() => handleStep(index)}
                             style={{ justifyContent: "flex-start" }}
-                            sx={{ pl: 0, width: 400 }}
+                            sx={{ pl: 0, width: 480 }}
                         >
                             {displayStepIcon(index)}
                             <Typography>{step.label}</Typography>
