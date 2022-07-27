@@ -37,11 +37,8 @@ export default function WidgetControl(props: any) {
 
     const handleApply = () => {
         let step = activeStep;
-        //let stepNew = activeStep + 1;
-        //updateStep(stepNew);
-
-        const elem = document.getElementById(extensionConst.buttonApplyId);
-        elem.textContent = step.toString();
+        const elem = document.getElementById(extensionConst.buttonApplyId) as HTMLButtonElement;
+        elem.value = step.toString();
         elem.click();
     };
 
@@ -87,10 +84,10 @@ export default function WidgetControl(props: any) {
                     id={extensionConst.buttonControlId}
                     sx={{ width: 0, height: 0, p: 0, m: 0, b: 0 }}
                     onClick={(e) => {
-                        if (e.currentTarget.textContent === "true") setDisableButton(false);
+                        if (e.currentTarget.value !== "false" ) setDisableButton(false);
                         else setDisableButton(true);
                     }}
-                > "true" </Button>
+                />
                 </>
         );
     }

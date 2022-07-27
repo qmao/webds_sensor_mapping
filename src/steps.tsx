@@ -115,7 +115,7 @@ export default function VerticalStepper(props: ISteppr) {
         }
 
         const elem = (document.getElementById(extensionConst.buttonControlId) as HTMLButtonElement);
-        elem.textContent = enable.toString();
+        elem.value = enable.toString();
         elem.click();
 
     }, [props.step]);
@@ -678,8 +678,7 @@ export default function VerticalStepper(props: ISteppr) {
     }
 
     async function onApply(event: any) {
-        //console.log("On Apply", event.currentTarget.textContent);
-        let index = parseInt(event.currentTarget.textContent, 10);
+        let index = parseInt(event.currentTarget.value, 10);
         var dataToSend = {};
 
         switch (index) {
