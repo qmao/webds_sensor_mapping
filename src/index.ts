@@ -10,19 +10,21 @@ import { WidgetTracker } from '@jupyterlab/apputils';
 
 import { ILauncher } from '@jupyterlab/launcher';
 
-import { ShellWidget } from './wrapper'
+import { SensorMappingWidget } from './wrapper'
 
 import { extensionSensorMappingIcon } from './icons';
 
 import { WebDSService, WebDSWidget } from '@webds/service';
 
-
-/**
- * The command IDs used by the server extension plugin.
- */
-namespace CommandIDs {
-  export const sensor_mapping = 'webds:webds-sensor-mapping';
+namespace Attributes {
+  export const command = "webds_sensor_mapping:open";
+  export const id = "webds_sensor_mapping_widget";
+  export const label = "Sensor Mapping";
+  export const caption = "Sensor Mapping";
+  export const category = 'Touch - Config Library';
+  export const rank = 30;
 }
+
 
 /**
  * Initialization data for the reprogram extension.
@@ -42,22 +44,19 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     let widget: WebDSWidget;
     const { commands, shell } = app;
-    const command = CommandIDs.sensor_mapping;
-    const category = 'Touch - Config Library'
-    const extension_string = 'Sensor Mapping';
-
+    const command =  Attributes.command;
 
     commands.addCommand(command, {
-      label: extension_string,
-      caption: extension_string,
+      label: Attributes.label,
+      caption: Attributes.caption,
 	  icon: extensionSensorMappingIcon,
       execute: () => {
         if (!widget || widget.isDisposed) {
-          let content = new ShellWidget(service, settingRegistry);
+          let content = new SensorMappingWidget(Attributes.id, service, settingRegistry);
 
-          widget = new WebDSWidget<ShellWidget>({ content });
-          widget.id = 'webds_sensor_mapping_widget';
-          widget.title.label = extension_string;
+          widget = new WebDSWidget<SensorMappingWidget>({ content });
+          widget.id = Attributes.id;
+          widget.title.label = Attributes.label;
           widget.title.closable = true;
           widget.title.icon = extensionSensorMappingIcon;
         }
@@ -75,12 +74,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
     // Add launcher
     launcher.add({
       command: command,
-      category: category,
-	  rank: 30
+      category: Attributes.category,
+      rank: Attributes.rank
     });
 
-    let tracker = new WidgetTracker<WebDSWidget>({ namespace: 'webds_sensor_mapping' });
-    restorer.restore(tracker, { command, name: () => 'webds_sensor_mapping' });
+    let tracker = new WidgetTracker<WebDSWidget>({ namespace: Attributes.id });
+    restorer.restore(tracker, { command, name: () => Attributes.id });
   }
 };
 
