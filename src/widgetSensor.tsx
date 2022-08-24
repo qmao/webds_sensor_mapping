@@ -50,20 +50,18 @@ export default function WidgetSensor(props: SensorParam) {
   });
 
   useEffect(() => {
-    let len =
-      props.xdir.length > props.ydir.length
-        ? PANEL_SENSOR_MAX
-        : (PANEL_SENSOR_MAX * props.xdir.length) / props.ydir.length;
-    setXLength(len);
-  }, [props.xdir]);
-
-  useEffect(() => {
-    let len =
-      props.xdir.length <= props.ydir.length
-        ? PANEL_SENSOR_MAX
-        : (PANEL_SENSOR_MAX * props.ydir.length) / props.xdir.length;
-    setYLength(len);
-  }, [props.ydir]);
+    let xlen = 0;
+    let ylen = 0;
+    if (props.xdir.length > props.ydir.length) {
+      xlen = PANEL_SENSOR_MAX;
+      ylen = (PANEL_SENSOR_MAX * props.ydir.length) / props.xdir.length;
+    } else {
+      xlen = (PANEL_SENSOR_MAX * props.xdir.length) / props.ydir.length;
+      ylen = PANEL_SENSOR_MAX;
+    }
+    setXLength(xlen);
+    setYLength(ylen);
+  }, [props.xdir, props.ydir]);
 
   /*  qmao
   const handlePanelTrxChange = (
@@ -268,7 +266,7 @@ export default function WidgetSensor(props: SensorParam) {
         justifyContent="space-between"
         sx={{
           bgcolor: "black",
-          border: "2px solid grey",
+          border: "1px solid grey",
           width: xLength,
           height: yLength,
           position: "relative",
