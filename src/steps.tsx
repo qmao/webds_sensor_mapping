@@ -173,12 +173,12 @@ export default function VerticalStepper(props: ISteppr) {
   }, [initState]);
 
   useEffect(() => {
-    if (txCountError || rxCountError || txError || rxError) {
+    if (txCountError || rxCountError || txError || rxError || !dataReady) {
       props.updateStatus(true);
     } else {
       props.updateStatus(false);
     }
-  }, [txCountError, rxCountError, txError, rxError, props]);
+  }, [txCountError, rxCountError, txError, rxError, props, dataReady]);
 
   const Identify = async (): Promise<string> => {
     let partNumber: string = "none";
@@ -1083,7 +1083,7 @@ export default function VerticalStepper(props: ISteppr) {
       spacing={2}
       sx={{ width: 500 }}
     >
-	 { initState &&
+	 { initState && dataReady &&
       <Stepper
         nonLinear
         activeStep={activeStep}
