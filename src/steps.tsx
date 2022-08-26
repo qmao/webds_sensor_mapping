@@ -346,18 +346,24 @@ export default function VerticalStepper(props: ISteppr) {
 
     try {
       data.dir.forEach((value) => {
-        if (!data.bk.includes(value)) {
-          ret.info = "Invalid " + value.toString();
-          ret.status = true;
-          throw BreakException;
-        }
+        if (value === 0) {
 
-        if (singleCheck.includes(value)) {
-          ret.info = "mutilple " + value.toString();
-          ret.status = true;
-          throw BreakException;
         }
-        singleCheck.push(value);
+        else
+        {
+          if (!data.bk.includes(value)) {
+            ret.info = "Invalid " + value.toString();
+            ret.status = true;
+            throw BreakException;
+          }
+
+          if (singleCheck.includes(value)) {
+            ret.info = "mutilple " + value.toString();
+            ret.status = true;
+            throw BreakException;
+          }
+          singleCheck.push(value);
+        }
       });
     } catch (e) {
       return ret;
