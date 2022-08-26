@@ -17,8 +17,6 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Backdrop,
-  CircularProgress,
   InputBase,
   styled
 } from "@mui/material";
@@ -58,6 +56,7 @@ interface ISteppr {
   step: any;
   service: any;
   updateStatus: any;
+  updateInitState: any;
 }
 
 interface IAlertInfo {
@@ -118,13 +117,13 @@ export default function VerticalStepper(props: ISteppr) {
   const [ydir, setYdir] = useState<number[]>([]);
   const [xTrx, setXTrx] = useState("");
   const [defaultSelect, setDefaultSelect] = useState("");
+  const [initState, setInitState] = useState(false);
 
   const [bankingListAll, setBankingListAll] = useState([]);
   const [bankingSchemeConfig, setBankingSchemeConfig] = useState([]);
 
   const [needReset, setNeedReset] = useState(false);
-  const [isReady, setReady] = useState(false);
-  const [isProcessing, setProcessing] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
   const [openAlert, setOpenAlert] = useState<IAlertInfo>({
     state: false,
     message: "",
@@ -168,6 +167,10 @@ export default function VerticalStepper(props: ISteppr) {
       setNeedReset(false);
     }
   }, [txCount, rxCount, xdir, ydir]);
+  
+  useEffect(() => {
+    props.updateInitState(initState);
+  }, [initState]);
 
   useEffect(() => {
     if (txCountError || rxCountError || txError || rxError) {
@@ -593,7 +596,7 @@ export default function VerticalStepper(props: ISteppr) {
 			updateTxMapping(tx.slice(0, txlen).toString());
 			updateRxMapping(rx.slice(0, rxlen).toString());
 
-			setReady(true);
+			setDataReady(true);
 		})
 		.catch(err => {
 			console.log(err);
@@ -602,7 +605,7 @@ export default function VerticalStepper(props: ISteppr) {
 		})
 		.finally(() => {
 		   updateLatestStatus();
-		   setProcessing(false);
+		   setInitState(true);
 		})
   };
 
@@ -813,7 +816,6 @@ export default function VerticalStepper(props: ISteppr) {
       newStatus[StepIndex.Banking] = 1;
     }
 
-    console.log("QMAO", newStatus);
     dataToSend = {
       txCount: txCount,
       rxCount: rxCount,
@@ -1081,6 +1083,7 @@ export default function VerticalStepper(props: ISteppr) {
       spacing={2}
       sx={{ width: 500 }}
     >
+	 { initState &&
       <Stepper
         nonLinear
         activeStep={activeStep}
@@ -1106,17 +1109,11 @@ export default function VerticalStepper(props: ISteppr) {
           </Step>
         ))}
       </Stepper>
+	  }
 
       {displayAlert()}
 
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={isProcessing}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-
-      {isReady && (
+      {dataReady && (
         <Button
           id={extensionConst.buttonApplyId}
           sx={{ width: 0, height: 0, p: 0, m: 0, b: 0 }}
