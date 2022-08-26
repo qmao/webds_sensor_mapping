@@ -935,16 +935,14 @@ export default function VerticalStepper(props: ISteppr) {
           value={xTrx}
           onChange={handleAxesChange}
         >
-          <FormControlLabel
-            value={"TX"}
-            control={<Radio />}
-            label="Tx on X-axis"
-          />
-          <FormControlLabel
-            value={"RX"}
-            control={<Radio />}
-            label="Rx on X-axis"
-          />
+          <Stack direction="row" justifyContent="center" alignItems="center">
+            <FormControlLabel value={"TX"} control={<Radio />} label="" />
+            <Typography>Tx on X-axis</Typography>
+          </Stack>
+          <Stack direction="row" justifyContent="center" alignItems="center">
+            <FormControlLabel value={"RX"} control={<Radio />} label="" />
+            <Typography>Rx on X-axis</Typography>
+          </Stack>
         </RadioGroup>
       </FormControl>
     );
