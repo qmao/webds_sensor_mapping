@@ -68,6 +68,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
           shell.add(widget, 'main');
 
         shell.activateById(widget.id);
+
+        widget.setShadows();
       }
     });
 

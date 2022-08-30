@@ -16,7 +16,6 @@ export class SensorMappingWidget extends ReactWidget {
     constructor(id: string, service: WebDSService, settingRegistry?: ISettingRegistry) {
         super();
         this._id = id;
-        this.addClass('jp-webds-widget');
         this._service = service;
         this._settingRegistry = settingRegistry || null;
     }
@@ -27,6 +26,8 @@ export class SensorMappingWidget extends ReactWidget {
                 <div id={this._id + "_content"} className="jp-webds-widget">
                     <MainWidget service={this._service} settingRegistry={this._settingRegistry} />
                 </div>
+                <div className="jp-webds-widget-shadow jp-webds-widget-shadow-top"></div>
+                <div className="jp-webds-widget-shadow jp-webds-widget-shadow-bottom"></div>
             </div>
         );
     }
