@@ -735,7 +735,7 @@ export default function VerticalStepper(props: ISteppr) {
   }
 
   function getBankingInputContent() {
-    let str = "Banking Range\n";
+    let str = "Valid Banking Range\n";
     if (txData.current.bk.length) {
       str = str + "[TX]" + txData.current.bk.toString() + "\n";
     }
