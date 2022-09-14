@@ -569,44 +569,49 @@ export default function VerticalStepper(props: ISteppr) {
     applyParam.current.txAxis = xTrxRef.current;
   }
 
-  const initSensorMapping = async () => {
-	props.service.packrat.cache.addPrivateConfig()
-		.then((ret) => {
-			console.log(ret);
-			setOpenAlert({ state: true, severity: 'success', message: ret.toString() });
-		})
-		.then(() => Get())
-		.then((ret) => {
-			let config = JSON.parse(ret);
-			var txlen = config["txCount"];
-			var rxlen = config["rxCount"];
-			var tx = config["imageTxes"];
-			var rx = config["imageRxes"];
+    const initSensorMapping = async () => {
+        try {
+            let ret;
+            const external = props.service.pinormos.isExternal();
+            if (external) {
+                ret = await props.service.packrat.cache.addPublicConfig();
+            } else {
+                ret = await props.service.packrat.cache.addPrivateConfig();
+            }
+            setOpenAlert({ state: true, severity: 'success', message: ret.toString() });
 
-			findMatchBankingScheme(tx, rx);
+            ret = await Get();
 
-			updatexTrxRef(config["txAxis"] ? "RX" : "TX" );
+            let config = JSON.parse(ret);
+            var txlen = config["txCount"];
+            var rxlen = config["rxCount"];
+            var tx = config["imageTxes"];
+            var rx = config["imageRxes"];
 
-			updateTxCount(txlen.toString());
-			updateRxCount(rxlen.toString());
+            findMatchBankingScheme(tx, rx);
 
-			txData.current.dim = tx.length;
-			rxData.current.dim = rx.length;
+            updatexTrxRef(config["txAxis"] ? "RX" : "TX");
 
-			updateTxMapping(tx.slice(0, txlen).toString());
-			updateRxMapping(rx.slice(0, rxlen).toString());
+            updateTxCount(txlen.toString());
+            updateRxCount(rxlen.toString());
 
-			setDataReady(true);
-		})
-		.catch(err => {
-			console.log(err);
-			setOpenAlert({ state: true, severity: 'error', message: err.toString() });
-			return;
-		})
-		.finally(() => {
-		   updateLatestStatus();
-		   setInitState(true);
-		})
+            txData.current.dim = tx.length;
+            rxData.current.dim = rx.length;
+
+            updateTxMapping(tx.slice(0, txlen).toString());
+            updateRxMapping(rx.slice(0, rxlen).toString());
+
+            setDataReady(true);
+
+            updateLatestStatus();
+            setInitState(true);
+
+        } catch (error) {
+            console.error(error);
+            setOpenAlert({ state: true, severity: 'error', message: error.toString() });
+            updateLatestStatus();
+            setInitState(true);
+        }
   };
 
   const initialize = async () => {
