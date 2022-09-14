@@ -8,14 +8,14 @@ import {
 } from "@mui/material";
 
 import { ThemeProvider } from "@mui/material/styles";
-import WidgetContent from "./widgetContent";
+import { WidgetContent } from "./widgetContent";
 import WidgetControl from "./widgetControl";
 
 const WIDGET_WIDTH = 900;
 const WIDGET_HEIGHT_TITLE = 70;
 const WIDGET_HEIGHT_CONTROLS = 70;
 
-export default function MainWidget(props: any) {
+export const MainWidget = (props: any): JSX.Element => {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState(false);
   const [initState, setInitState] = useState(false);

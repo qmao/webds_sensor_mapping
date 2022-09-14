@@ -2,7 +2,7 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 
 import { WebDSService } from '@webds/service';
-import MainWidget from './widget';
+import { MainWidget } from './widget';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 

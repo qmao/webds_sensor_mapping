@@ -21,7 +21,7 @@ import {
   styled
 } from "@mui/material";
 
-import BankingScheme from "./bankingScheme";
+import { BankingScheme } from "./bankingScheme";
 import { extensionConst } from "./constant";
 
 import { requestAPI } from "./handler";
@@ -97,7 +97,7 @@ const BankingInput = styled(InputBase)(({ theme }) => ({
   }
 }));
 
-export default function VerticalStepper(props: ISteppr) {
+export const VerticalStepper = (props: ISteppr): JSX.Element => {
   const [activeStep, setActiveStep] = React.useState(props.step);
   const [stepStatus, setStepStatus] = useState(
     Array(extensionConst.steps).fill(0)
@@ -950,11 +950,11 @@ export default function VerticalStepper(props: ISteppr) {
         >
           <Stack direction="row" justifyContent="center" alignItems="center">
             <FormControlLabel value={"TX"} control={<Radio />} label="" />
-            <Typography>Tx on X-axis</Typography>
+            <Typography color="textPrimary">Tx on X-axis</Typography>
           </Stack>
           <Stack direction="row" justifyContent="center" alignItems="center">
             <FormControlLabel value={"RX"} control={<Radio />} label="" />
-            <Typography>Rx on X-axis</Typography>
+            <Typography color="textPrimary">Rx on X-axis</Typography>
           </Stack>
         </RadioGroup>
       </FormControl>
@@ -1104,7 +1104,7 @@ export default function VerticalStepper(props: ISteppr) {
               sx={{ pl: 0, width: 480 }}
             >
               {displayStepIcon(index)}
-              <Typography>{step.label}</Typography>
+              <Typography color="textPrimary">{step.label}</Typography>
             </Button>
             <StepContent>
               <Box sx={{ m: 1 }}>

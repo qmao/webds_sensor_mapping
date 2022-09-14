@@ -16,7 +16,7 @@ const BANKING_ITEM_LIST_HEIGHT = BANKING_ITEM_HEIGHT + 2;
 const BANKING_LIST_WIDTH = 420;
 const BANKING_ITEM_LIST_WIDTH = BANKING_LIST_WIDTH - 100;
 
-export default function BankingScheme(props: any) {
+export const BankingScheme = (props: any): JSX.Element => {
   const [checked, setChecked] = useState("");
   const [title, setTitle] = useState([]);
   const [selectedBankingScheme, setSelectedBankingScheme] = useState<
@@ -78,6 +78,7 @@ export default function BankingScheme(props: any) {
       <Stack>
         <Tooltip title={info} placement="top">
           <Typography
+            color="textPrimary"
             variant="overline"
             key={`list-trx-${id0}-${id1}-${id2}`}
             sx={{ textAlign: "center" }}
@@ -99,6 +100,7 @@ export default function BankingScheme(props: any) {
     return (
       <Stack key={`list-trx-stack-${id0}-${id1}-${id2}`} direction="row">
         <Typography
+          color="textPrimary"
           variant="overline"
           key={`list-trx-${id0}-${id1}-${id2}`}
           sx={{ textAlign: "center" }}
@@ -196,6 +198,7 @@ export default function BankingScheme(props: any) {
                     }}
                   >
                     <Typography
+                      color="textPrimary"
                       variant="overline"
                       key={`list-trx-count-${axis_sense}-${index}`}
                       sx={{ textAlign: "center", width: 50 }}
