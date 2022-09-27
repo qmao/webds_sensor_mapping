@@ -621,17 +621,15 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         for (const [key, value] of Object.entries(extensionConst.partNumber)) {
           console.log(key, value);
           const match = value.find((element) => {
-            if (partNumber.includes(element)) {
+             if (partNumber.toLowerCase().includes(element)) {
               asic.current = key;
               return true;
             }
           });
-          console.log(match);
         }
 
         if (asic.current === "") {
-          console.log("asic not found");
-          return;
+            throw `unsupported partnumber ${partNumber}`;
         }
 
         var banking_field = Object.keys(
@@ -687,7 +685,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         handleBankingSchemeInit(row, trx_select);
       })
       .catch((err) => {
-        console.log(err);
+          alert(err);
       });
   };
 

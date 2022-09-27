@@ -23,16 +23,21 @@ export const BankingScheme = (props: any): JSX.Element => {
     string | undefined
   >(undefined);
 
-  useEffect(() => {
-    var title: any = Object.values(
-      extensionConst.bankingScheme[props.asic]["Banking"]
-    );
-    var t = [];
-    t = title.map((value) => {
-      let data = value.slice(3);
-      return data;
-    });
-    setTitle(t);
+    useEffect(() => {
+        try {
+            var title: any = Object.values(
+                extensionConst.bankingScheme[props.asic]["Banking"]
+            );
+            var t = [];
+            t = title.map((value) => {
+                let data = value.slice(3);
+                return data;
+            });
+            setTitle(t);
+        }
+        catch (e) {
+            console.log(e);
+        }
   }, []);
 
   useEffect(() => {
