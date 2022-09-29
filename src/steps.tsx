@@ -620,7 +620,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         console.log(partNumber);
         for (const [key, value] of Object.entries(extensionConst.partNumber)) {
           console.log(key, value);
-          const match = value.find((element) => {
+          value.find((element) => {
              if (partNumber.toLowerCase().includes(element)) {
               asic.current = key;
               return true;
