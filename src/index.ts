@@ -42,8 +42,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     settingRegistry: ISettingRegistry | null) => {
     console.log('JupyterLab extension webds_sensor_mapping is activated!');
 
-    await service.initialized;
-
     let widget: WebDSWidget;
     const { commands, shell } = app;
     const command =  Attributes.command;
