@@ -1,6 +1,6 @@
 {
   "name": "@webds/sensor_mapping",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": " set up Tx/Rx Mapping",
   "keywords": [
     "jupyter",
