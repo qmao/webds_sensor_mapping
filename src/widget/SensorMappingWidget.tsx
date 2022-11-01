@@ -2,7 +2,7 @@ import { ReactWidget } from '@jupyterlab/apputils';
 import React from 'react';
 
 import { WebDSService } from '@webds/service';
-import { MainWidget } from './widget';
+import { SensorMappingComponent } from './SensorMappingComponent';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 
 
@@ -24,7 +24,7 @@ export class SensorMappingWidget extends ReactWidget {
         return (
             <div id={this._id + "_container"} className="jp-webds-widget-container">
                 <div id={this._id + "_content"} className="jp-webds-widget">
-                    <MainWidget service={this._service} settingRegistry={this._settingRegistry} />
+                    <SensorMappingComponent service={this._service} settingRegistry={this._settingRegistry} />
                 </div>
                 <div className="jp-webds-widget-shadow jp-webds-widget-shadow-top"></div>
                 <div className="jp-webds-widget-shadow jp-webds-widget-shadow-bottom"></div>

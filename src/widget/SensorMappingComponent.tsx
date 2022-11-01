@@ -15,7 +15,7 @@ const WIDGET_WIDTH = 900;
 const WIDGET_HEIGHT_TITLE = 70;
 const WIDGET_HEIGHT_CONTROLS = 70;
 
-export const MainWidget = (props: any): JSX.Element => {
+export const SensorMappingComponent = (props: any): JSX.Element => {
   const [step, setStep] = useState(0);
   const [status, setStatus] = useState(false);
   const [initState, setInitState] = useState(false);

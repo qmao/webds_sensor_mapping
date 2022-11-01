@@ -10,7 +10,7 @@ import { WidgetTracker } from '@jupyterlab/apputils';
 
 import { ILauncher } from '@jupyterlab/launcher';
 
-import { SensorMappingWidget } from './wrapper'
+import { SensorMappingWidget } from './widget/SensorMappingWidget'
 
 import { extensionSensorMappingIcon } from './icons';
 
@@ -32,14 +32,13 @@ namespace Attributes {
 const plugin: JupyterFrontEndPlugin<void> = {
   id: '@webds/sensor_mapping:plugin',
   autoStart: true,
-  optional: [ISettingRegistry],
-  requires: [ILauncher, ILayoutRestorer, WebDSService],
+  requires: [ILauncher, ILayoutRestorer, WebDSService, ISettingRegistry],
   activate: async (
     app: JupyterFrontEnd,
     launcher: ILauncher,
     restorer: ILayoutRestorer,
     service: WebDSService,
-    settingRegistry: ISettingRegistry | null) => {
+    settingRegistry: ISettingRegistry) => {
     console.log('JupyterLab extension webds_sensor_mapping is activated!');
 
     await service.initialized;

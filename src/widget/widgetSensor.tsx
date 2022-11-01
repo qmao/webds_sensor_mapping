@@ -32,10 +32,10 @@ interface SensorParam {
 
 interface ISensorPoint {
   state: boolean;
-  x: number | undefined;
-  y: number | undefined;
-  xNumber: number | undefined;
-  yNumber: number | undefined;
+  x: number;
+  y: number;
+  xNumber: number;
+  yNumber: number;
 }
 
 export default function WidgetSensor(props: SensorParam) {
@@ -43,10 +43,10 @@ export default function WidgetSensor(props: SensorParam) {
   const [yLength, setYLength] = useState(0);
   const [sensorPoint, setSensorPoint] = useState<ISensorPoint>({
     state: false,
-    x: undefined,
-    y: undefined,
-    xNumber: undefined,
-    yNumber: undefined
+    x: -1,
+    y: -1,
+    xNumber: -1,
+    yNumber: -1
   });
 
   useEffect(() => {
@@ -104,10 +104,10 @@ export default function WidgetSensor(props: SensorParam) {
 
   function hover(
     event: any,
-    x: number | undefined,
-    y: number | undefined,
-    xNumber: number | undefined,
-    yNumber: number | undefined,
+    x: number,
+    y: number,
+    xNumber: number,
+    yNumber: number,
     state: boolean
   ) {
     if (state) {
@@ -121,10 +121,10 @@ export default function WidgetSensor(props: SensorParam) {
     } else {
       setSensorPoint({
         state: state,
-        x: undefined,
-        y: undefined,
-        xNumber: undefined,
-        yNumber: undefined
+        x: -1,
+        y: -1,
+        xNumber: -1,
+        yNumber: -1
       });
     }
   }
