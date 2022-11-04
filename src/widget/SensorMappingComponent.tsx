@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import {
-  CircularProgress
+    CircularProgress
 } from "@mui/material";
 
 import { ThemeProvider } from "@mui/material/styles";
@@ -52,8 +52,8 @@ export const SensorMappingComponent = (props: any): JSX.Element => {
   }
 
   function showAll() {
-    return (
-        <Canvas title="Sensor Mapping">
+      return (
+          <Canvas title="Sensor Mapping" sx={{width: 1000}}>
             <Content>
               {ShowContent()}
 		      { !initState &&
@@ -73,11 +73,11 @@ export const SensorMappingComponent = (props: any): JSX.Element => {
                 sx={{
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center"
+                    justifyContent: "center",
+                    alignItems: "stretch"
                 }}
             >
-                { initState && ShowControl() }
+                {initState && ShowControl()}
             </Controls>
         </Canvas>
     );
