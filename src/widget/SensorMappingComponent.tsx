@@ -94,3 +94,4 @@ export const SensorMappingComponent = (props: any): JSX.Element => {
   );
 }
 
+export default SensorMappingComponent;
