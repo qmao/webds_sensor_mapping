@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-import {
-  Stack,
-  Typography,
-  Box,
-  IconButton,
-  Divider
-} from "@mui/material";
+import { Stack, Typography, Box, Divider } from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-
-//const ITEM_LENGTH = "24px";
-//const ITEM_FONTSIZE = 12;
-
-const PANEL_SENSOR_MAX = 350;
+const PANEL_SENSOR_MAX = 400;
 const PANEL_HEIGHT_MIN = PANEL_SENSOR_MAX + 20;
+const SENSOR_INFO_TEXT_PARAM = {
+    fontWeight: "bold",
+    fontSize: 13
+};
 
 /*
 const MyPopover = styled(Popover)(({ theme }) => ({
@@ -25,302 +19,410 @@ const MyPopover = styled(Popover)(({ theme }) => ({
 */
 
 interface SensorParam {
-  xdir: number[];
-  ydir: number[];
-  axis: boolean;
+    xdir: number[];
+    ydir: number[];
+    axis: boolean;
 }
 
 interface ISensorPoint {
-  state: boolean;
-  x: number;
-  y: number;
-  xNumber: number;
-  yNumber: number;
+    state: boolean;
+    x: number;
+    y: number;
+    xNumber: number;
+    yNumber: number;
 }
 
 export default function WidgetSensor(props: SensorParam) {
-  const [xLength, setXLength] = useState(0);
-  const [yLength, setYLength] = useState(0);
-  const [sensorPoint, setSensorPoint] = useState<ISensorPoint>({
-    state: false,
-    x: -1,
-    y: -1,
-    xNumber: -1,
-    yNumber: -1
-  });
-
-  useEffect(() => {
-    let xlen = 0;
-    let ylen = 0;
-    if (props.xdir.length > props.ydir.length) {
-      xlen = PANEL_SENSOR_MAX;
-      ylen = (PANEL_SENSOR_MAX * props.ydir.length) / props.xdir.length;
-    } else {
-      xlen = (PANEL_SENSOR_MAX * props.xdir.length) / props.ydir.length;
-      ylen = PANEL_SENSOR_MAX;
-    }
-    setXLength(xlen);
-    setYLength(ylen);
-  }, [props.xdir, props.ydir]);
-
-  /*  qmao
-  const handlePanelTrxChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    index: number,
-    direction: string
-  ) => {
-    var newValue = event.target.value;
-
-    var user = [];
-    if (direction === "y") {
-      user = [...props.ydir];
-      user[index] = newValue;
-      setYdir(user);
-    } else {
-      user = [...props.xdir];
-      user[index] = newValue;
-      setXdir(user);
-    }
-  };
-
-  const handlePanelTrxChangeBlur = (direction: string) => {
-    var user = [];
-    if (direction === "y") {
-      user = props.ydir;
-    } else {
-      user = props.xdir;
-    }
-
-    if (
-      (xTrxRef.current === "TX" && direction === "x") ||
-      (xTrxRef.current !== "TX" && direction === "y")
-    ) {
-      updateTxMapping(user.toString());
-    } else {
-      updateRxMapping(user.toString());
-    }
-  };
-  */
-
-  function hover(
-    event: any,
-    x: number,
-    y: number,
-    xNumber: number,
-    yNumber: number,
-    state: boolean
-  ) {
-    if (state) {
-      setSensorPoint({
-        state: state,
-        x: x,
-        y: y,
-        xNumber: xNumber,
-        yNumber: yNumber
-      });
-    } else {
-      setSensorPoint({
-        state: state,
+    const [ready, setReady] = useState(false);
+    const [xLength, setXLength] = useState(0);
+    const [yLength, setYLength] = useState(0);
+    const [xGap, setXGap] = useState(0);
+    const [yGap, setYGap] = useState(0);
+    const [xdir, setXdir] = useState([]);
+    const [ydir, setYdir] = useState([]);
+    const [sensorPoint, setSensorPoint] = useState<ISensorPoint>({
+        state: false,
         x: -1,
         y: -1,
         xNumber: -1,
         yNumber: -1
-      });
-    }
-  }
+    });
 
-  function showAxisIcon(direction: string) {
-    return (
-      <IconButton disabled={true}>
-        <Stack justifyContent="center" sx={{ width: 18, height: 18 }}>
-          <Typography variant="overline" color="primary" sx={{ fontSize: 18 }}>
-            {direction}
-          </Typography>
-        </Stack>
-      </IconButton>
-    );
-  }
+    function updateSensorParam(x: any, y: any) {
+        let xlen = 0;
+        let ylen = 0;
+        if (x.length > y.length) {
+            xlen = PANEL_SENSOR_MAX;
+            ylen = (PANEL_SENSOR_MAX * y.length) / x.length;
+        } else {
+            xlen = (PANEL_SENSOR_MAX * x.length) / y.length;
+            ylen = PANEL_SENSOR_MAX;
+        }
+        setXLength(xlen);
+        setYLength(ylen);
 
-  function displayPoints() {
-    let xdir = props.xdir;
-    let ydir = [...props.ydir].reverse();
+        let ny: any = [...y].reverse();
+        setXdir(x);
+        setYdir(ny);
 
-    let xGap = 20;
-    let yGap = 20;
-
-    let xLineGap = 20;
-    let yLineGap = 20;
-
-    if (ydir.length !== 0) {
-      let count = ydir.length === 1 ? 1 : ydir.length - 1;
-      yGap = yLength / count;
-      yLineGap = (yLength - 4) / count;
-    } else {
-      ydir = [-1];
-    }
-    if (xdir.length !== 0) {
-      let count = xdir.length === 1 ? 1 : xdir.length - 1;
-      xGap = xLength / count;
-      xLineGap = (xLength - 4) / count;
-    } else {
-      xdir = [-1];
+        if (y.length !== 0) {
+            let count = y.length === 1 ? 1 : y.length;
+            setYGap(ylen / count);
+        } else {
+            setYdir([]);
+        }
+        if (x.length !== 0) {
+            let count = x.length === 1 ? 1 : x.length;
+            setXGap(xlen / count);
+        } else {
+            setXdir([]);
+        }
     }
 
-    return (
-      <>
-        <Divider
-          sx={{
-            top: 2 + sensorPoint.y * yLineGap,
-            left: 0,
-            position: "absolute",
-            width: xLength,
-            bgcolor: "white"
-          }}
-        />
-        {sensorPoint.yNumber >= 0 && (
-          <Stack
-            justifyContent="center"
-            sx={{
-              width: 30,
-              height: 30,
-              top: sensorPoint.y * yLineGap - yLineGap,
-              left: -30,
-              display: "flex",
-              alignItems: "center",
-              position: "absolute"
-            }}
-          >
-            <Typography
-              variant="overline"
-              color="primary"
-              sx={{ fontSize: 16 }}
-            >
-              {sensorPoint.yNumber}
-            </Typography>
-          </Stack>
-        )}
+    useEffect(() => {
+        updateSensorParam(props.xdir, props.ydir);
+    }, [props.xdir, props.ydir]);
 
-        <Divider
-          orientation="vertical"
-          sx={{
-            top: 0,
-            left: 2 + sensorPoint.x * xLineGap,
-            position: "absolute",
-            bgcolor: "white"
-          }}
-        />
-        {sensorPoint.xNumber >= 0 && (
-          <Stack
-            justifyContent="center"
-            sx={{
-              width: 18,
-              height: 18,
-              top: yLength + 10,
-              left: 2 + sensorPoint.x * xLineGap - xLineGap / 2,
-              display: "flex",
-              alignItems: "center",
-              position: "absolute"
-            }}
-          >
-            <Typography
-              variant="overline"
-              color="primary"
-              sx={{ fontSize: 16 }}
-            >
-              {sensorPoint.xNumber}
-            </Typography>
-          </Stack>
-        )}
-        {xdir.map((xElement, xindex) =>
-          ydir.map((yElement, yindex) => (
-            <Box
-              key={`sensor-box-${xindex}-${yindex}`}
-              sx={{
-                top: yindex * yGap - yGap / 2,
-                left: xindex * xGap - xGap / 2,
-                position: "absolute",
-                display: "flex",
-                alignItems: "center",
-                width: xGap,
-                height: yGap
-                //":hover": {
-                // bgcolor: "pink"
-                //}
-              }}
-              onMouseEnter={(e) =>
-                hover(e, xindex, yindex, xElement, yElement, true)
-              }
-              onMouseLeave={(e) =>
-                hover(e, xindex, yindex, xElement, yElement, false)
-              }
-            ></Box>
-          ))
-        )}
-      </>
-    );
-  }
+    useEffect(() => {
+        updateSensorParam(props.xdir, props.ydir);
+        setReady(true);
+    }, []);
 
-  function displayPanel() {
-    return (
-      <Stack
-        justifyContent="space-between"
-        sx={{
-          bgcolor: "black",
-          border: "1px solid grey",
-          width: xLength,
-          height: yLength,
-          position: "relative",
-          display: "inline-flex"
-        }}
-      >
-        {props.ydir.length > 0 && sensorPoint.state === false && (
-          <Stack direction="row" justifyContent="space-between">
-            <Stack alignItems="center">
-              {showAxisIcon("Y")}
-              <ArrowForwardIosIcon
-                color="primary"
+    function hover(
+        event: any,
+        x: number,
+        y: number,
+        xNumber: number,
+        yNumber: number,
+        state: boolean
+    ) {
+        if (state) {
+            setSensorPoint({
+                state: state,
+                x: x,
+                y: y,
+                xNumber: xNumber,
+                yNumber: yNumber
+            });
+        } else {
+            setSensorPoint({
+                state: state,
+                x: -1,
+                y: -1,
+                xNumber: -1,
+                yNumber: -1
+            });
+        }
+    }
+
+    function showPixelInfo() {
+        let indexStyle = { transform: "scale(0.7)" };
+        let numberParam = SENSOR_INFO_TEXT_PARAM;
+
+        return (
+            <Stack
+                justifyContent="space-between"
                 sx={{
-                  transform: "rotate(270deg)"
+                    width: 0,
+                    height: 0,
+                    position: "relative",
+                    display: "inline-flex"
                 }}
-              />
+            >
+                {sensorPoint.xNumber >= 0 && (
+                    <>
+                        <Stack
+                            direction="column"
+                            justifyContent="flex-start"
+                            sx={{
+                                width: xGap,
+                                height: xGap,
+                                top: 0,
+                                left: sensorPoint.x * xGap,
+                                display: "flex",
+                                alignItems: "center",
+                                position: "absolute"
+                            }}
+                        >
+                            <Typography variant="overline" sx={numberParam}>
+                                {sensorPoint.xNumber}
+                            </Typography>
+                        </Stack>
+                        <Stack
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                fontSize: 12,
+                                width: xGap,
+                                height: yGap,
+                                top: -yGap,
+                                left: sensorPoint.x * xGap,
+                                display: "flex",
+                                alignItems: "center",
+                                position: "absolute",
+                                textAlign: "center"
+                            }}
+                        >
+                            <Typography
+                                align="center"
+                                variant="overline"
+                                color="black"
+                                style={indexStyle}
+                            >
+                                {sensorPoint.x}
+                            </Typography>
+                        </Stack>
+                    </>
+                )}
+
+                {sensorPoint.yNumber >= 0 && (
+                    <>
+                        <Stack
+                            direction="row"
+                            justifyContent="flex-start"
+                            sx={{
+                                width: yGap,
+                                height: yGap,
+                                top: sensorPoint.y * yGap - yLength,
+                                left: -20,
+                                display: "flex",
+                                alignItems: "center",
+                                position: "absolute"
+                            }}
+                        >
+                            <Typography variant="overline" sx={numberParam}>
+                                {sensorPoint.yNumber}
+                            </Typography>
+                        </Stack>
+
+                        <Stack
+                            justifyContent="center"
+                            alignItems="center"
+                            sx={{
+                                width: xGap,
+                                height: yGap,
+                                top: sensorPoint.y * yGap - yLength + 1,
+                                left: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                position: "absolute",
+                                fontSize: 12,
+                                textAlign: "center"
+                            }}
+                        >
+                            <Typography
+                                align="center"
+                                variant="overline"
+                                color="black"
+                                style={indexStyle}
+                            >
+                                {ydir.length - sensorPoint.y - 1}
+                            </Typography>
+                        </Stack>
+                    </>
+                )}
             </Stack>
-          </Stack>
-        )}
+        );
+    }
 
-        {props.xdir.length > 0 && sensorPoint.state === false && (
-          <Box
-            sx={{
-              bottom: 0,
-              right: 0,
-              position: "absolute",
-              display: "flex",
-              alignItems: "center"
-            }}
-          >
-            <ArrowForwardIosIcon color="primary" />
-            {showAxisIcon("X")}
-          </Box>
-        )}
-        {displayPoints()}
-      </Stack>
+    function showSensorLength() {
+        return (
+            <Stack
+                justifyContent="space-between"
+                sx={{
+                    width: 0,
+                    height: 0,
+                    position: "relative",
+                    display: "inline-flex"
+                }}
+            >
+                <Stack
+                    sx={{
+                        top: -30,
+                        left: 0,
+                        position: "absolute"
+                    }}
+                >
+                    <Divider sx={{ width: xLength }}>
+                        <Typography sx={{ fontSize: 13 }}>{xdir.length}</Typography>
+                    </Divider>
+                </Stack>
+
+                <Stack
+                    sx={{
+                        top: 0,
+                        left: xLength + 6,
+                        position: "absolute"
+                    }}
+                >
+                    <Divider
+                        orientation="vertical"
+                        flexItem
+                        style={{ height: yLength, fontSize: 12 }}
+                    >
+                        <Typography sx={{ fontSize: 13 }}>{ydir.length}</Typography>
+                    </Divider>
+                </Stack>
+            </Stack>
+        );
+    }
+
+    function displayPointLine() {
+        return (
+            <>
+                {sensorPoint.state === true && (
+                    <Stack
+                        sx={{
+                            top: sensorPoint.y * yGap,
+                            left: 0,
+                            position: "absolute",
+                            width: xLength,
+                            height: yGap,
+                            backgroundColor: "white",
+                            opacity: "0.6"
+                        }}
+                    />
+                )}
+                {sensorPoint.state === true && (
+                    <Stack
+                        sx={{
+                            top: 0,
+                            left: sensorPoint.x * xGap,
+                            width: xGap,
+                            height: yLength,
+                            position: "absolute",
+                            backgroundColor: "white",
+                            opacity: "0.6"
+                        }}
+                    />
+                )}
+            </>
+        );
+    }
+
+    function displayPoints() {
+        return (
+            <Stack
+                justifyContent="space-between"
+                sx={{
+                    width: 0,
+                    height: 0,
+                    position: "relative",
+                    display: "inline-flex"
+                }}
+            >
+                {xdir.map((xElement, xindex) =>
+                    ydir.map((yElement, yindex) => (
+                        <Box
+                            key={`sensor-box-${xindex}-${yindex}`}
+                            sx={{
+                                top: yindex * yGap - yLength,
+                                left: xindex * xGap,
+                                position: "absolute",
+                                display: "flex",
+                                alignItems: "center",
+                                width: xGap,
+                                height: yGap
+                            }}
+                            onMouseEnter={(e) =>
+                                hover(e, xindex, yindex, xElement, yElement, true)
+                            }
+                            onMouseLeave={(e) =>
+                                hover(e, xindex, yindex, xElement, yElement, false)
+                            }
+                        ></Box>
+                    ))
+                )}
+            </Stack>
+        );
+    }
+
+    function displayAxis() {
+        return (
+            <Stack
+                sx={{
+                    width: 0,
+                    height: 0,
+                    position: "relative"
+                }}
+            >
+                <Stack
+                    direction="row"
+                    justifyContent="center"
+                    alignItems="center"
+                    sx={{
+                        position: "absolute",
+                        width: xLength,
+                        mt: 4
+                    }}
+                >
+                    <Stack justifyContent="center" alignItems="center" sx={{ m: 1 }}>
+                        <Typography sx={{ color: "text.secondary" }}>x</Typography>
+                    </Stack>
+                    <Divider
+                        sx={{
+                            width: xLength - 24
+                        }}
+                        style={{ fontSize: 12 }}
+                    ></Divider>
+                    <PlayArrowIcon
+                        style={{
+                            width: "16px",
+                            height: "16px",
+                            marginRight: -4
+                        }}
+                        sx={{
+                            position: "absolute",
+                            right: 0,
+                            color: "text.secondary"
+                        }}
+                    />
+                </Stack>
+            </Stack>
+        );
+    }
+
+    function displayPanel() {
+        return (
+            <Stack direction="column" spacing={2}>
+                <Stack direction="row" spacing={1}>
+                    <Stack
+                        justifyContent="space-between"
+                        sx={{
+                            bgcolor: "black",
+                            //border: "5px solid blue",
+                            width: xLength,
+                            height: yLength,
+                            position: "relative",
+                            display: "inline-flex",
+                            overflow: "hidden"
+                        }}
+                        style={{
+                            borderRadius: 15
+                        }}
+                    >
+                        {displayPointLine()}
+                    </Stack>
+                </Stack>
+            </Stack>
+        );
+    }
+
+    return (
+        <Stack
+            justifyContent="center"
+            alignItems="center"
+            sx={{ height: PANEL_HEIGHT_MIN }}
+        >
+            {ready && (
+                <Stack direction="column">
+                    {showSensorLength()}
+                    {displayPanel()}
+                    {showPixelInfo()}
+                    {displayPoints()}
+                    {props.axis && displayAxis()}
+                </Stack>
+            )}
+        </Stack>
     );
-  }
-
-  return (
-    <Stack
-      spacing={3}
-      direction="row"
-      justifyContent="center"
-      alignItems="flex-start"
-      sx={{ width: 400 }}
-    >
-      <Stack
-        sx={{ minHeight: PANEL_HEIGHT_MIN }}
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Stack direction="row">{displayPanel()}</Stack>
-      </Stack>
-    </Stack>
-  );
 }
