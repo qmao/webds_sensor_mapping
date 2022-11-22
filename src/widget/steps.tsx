@@ -658,7 +658,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                     trx_select[r["id"]]["list"] = trx;
                     trx_select[r["id"]]["count"] = [tx_count, rx_count];
 
-                    if (txData.current.dim < tx_count && rxData.current.dim < rx_count)
+                    if (txData.current.count <= tx_count && rxData.current.count <= rx_count)
                         row.push(r);
                 });
                 setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
