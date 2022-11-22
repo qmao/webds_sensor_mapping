@@ -22,6 +22,7 @@ interface SensorParam {
     xdir: number[];
     ydir: number[];
     axis: boolean;
+    disabled ?: boolean;
 }
 
 interface ISensorPoint {
@@ -383,6 +384,7 @@ export default function WidgetSensor(props: SensorParam) {
     }
 
     function displayPanel() {
+        let borderParam = props.disabled ? "2px solid red" : 0 ;
         return (
             <Stack direction="column" spacing={2}>
                 <Stack direction="row" spacing={1}>
@@ -390,7 +392,7 @@ export default function WidgetSensor(props: SensorParam) {
                         justifyContent="space-between"
                         sx={{
                             bgcolor: "black",
-                            //border: "5px solid blue",
+                            border: borderParam,
                             width: xLength,
                             height: yLength,
                             position: "relative",
@@ -418,9 +420,9 @@ export default function WidgetSensor(props: SensorParam) {
                 <Stack direction="column">
                     {showSensorLength()}
                     {displayPanel()}
-                    {showPixelInfo()}
-                    {displayPoints()}
-                    {props.axis && displayAxis()}
+                    {!props.disabled && showPixelInfo()}
+                    {!props.disabled && displayPoints()}
+                    {!props.disabled && props.axis && displayAxis()}
                 </Stack>
             )}
         </Stack>

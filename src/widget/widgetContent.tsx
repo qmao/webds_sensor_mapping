@@ -10,6 +10,7 @@ export const WidgetContent = (props: any): JSX.Element => {
     const [xdir, setXdir] = useState<number[]>([]);
     const [ydir, setYdir] = useState<number[]>([]);
     const [initState, setInitState] = useState(false);
+    const [status, setStatus] = useState(false);
 
     useEffect(() => {
         setShowAxis(props.step > 2 ? true : false);
@@ -29,6 +30,7 @@ export const WidgetContent = (props: any): JSX.Element => {
 
     function updateStatus(status: any) {
         props.updateStatus(status);
+        setStatus(status);
     }
 
     function updateInitState(status: any) {
@@ -60,7 +62,7 @@ export const WidgetContent = (props: any): JSX.Element => {
                 <>
                     <Divider orientation="vertical" flexItem />
                     <Stack sx={{ width: "50%", height: "100%", pt: 2 }}>
-                        <WidgetSensor xdir={xdir} ydir={ydir} axis={showAxis} />
+                        <WidgetSensor xdir={xdir} ydir={ydir} axis={showAxis} disabled={status}/>
                     </Stack>
                 </>
             )}

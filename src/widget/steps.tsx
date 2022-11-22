@@ -436,6 +436,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
     const handleTxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         updateTxCount(event.target.value);
+        validateTxRx();
     };
 
     const validateTxRx = () => {
@@ -450,6 +451,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
     const handleRxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         updateRxCount(event.target.value);
+        validateTxRx();
     };
 
     const handleSelectBankingScheme = (select: any) => {
