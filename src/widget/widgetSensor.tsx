@@ -19,10 +19,11 @@ const MyPopover = styled(Popover)(({ theme }) => ({
 */
 
 interface SensorParam {
+    size: number[];
     xdir: number[];
     ydir: number[];
     axis: boolean;
-    disabled ?: boolean;
+    disabled?: boolean;
 }
 
 interface ISensorPoint {
@@ -52,11 +53,20 @@ export default function WidgetSensor(props: SensorParam) {
     function updateSensorParam(x: any, y: any) {
         let xlen = 0;
         let ylen = 0;
-        if (x.length > y.length) {
+
+        let xcount = x.length;
+        let ycount = y.length;
+
+        if (props.disabled) {
+            xcount = props.size[0];
+            ycount = props.size[1];
+        }
+
+        if (xcount > ycount) {
             xlen = PANEL_SENSOR_MAX;
-            ylen = (PANEL_SENSOR_MAX * y.length) / x.length;
+            ylen = (PANEL_SENSOR_MAX * ycount) / xcount;
         } else {
-            xlen = (PANEL_SENSOR_MAX * x.length) / y.length;
+            xlen = (PANEL_SENSOR_MAX * xcount) / ycount;
             ylen = PANEL_SENSOR_MAX;
         }
         setXLength(xlen);
@@ -66,14 +76,14 @@ export default function WidgetSensor(props: SensorParam) {
         setXdir(x);
         setYdir(ny);
 
-        if (y.length !== 0) {
-            let count = y.length === 1 ? 1 : y.length;
+        if (ycount !== 0) {
+            let count = ycount === 1 ? 1 : ycount;
             setYGap(ylen / count);
         } else {
             setYdir([]);
         }
-        if (x.length !== 0) {
-            let count = x.length === 1 ? 1 : x.length;
+        if (xcount !== 0) {
+            let count = xcount === 1 ? 1 : xcount;
             setXGap(xlen / count);
         } else {
             setXdir([]);
@@ -82,7 +92,7 @@ export default function WidgetSensor(props: SensorParam) {
 
     useEffect(() => {
         updateSensorParam(props.xdir, props.ydir);
-    }, [props.xdir, props.ydir]);
+    }, [props.xdir, props.ydir, props.size]);
 
     useEffect(() => {
         updateSensorParam(props.xdir, props.ydir);
@@ -245,7 +255,9 @@ export default function WidgetSensor(props: SensorParam) {
                     }}
                 >
                     <Divider sx={{ width: xLength }}>
-                        <Typography sx={{ fontSize: 13 }}>{xdir.length}</Typography>
+                        <Typography sx={{ fontSize: 13 }}>
+                            {props.disabled ? props.size[0] : xdir.length}
+                        </Typography>
                     </Divider>
                 </Stack>
 
@@ -261,7 +273,9 @@ export default function WidgetSensor(props: SensorParam) {
                         flexItem
                         style={{ height: yLength, fontSize: 12 }}
                     >
-                        <Typography sx={{ fontSize: 13 }}>{ydir.length}</Typography>
+                        <Typography sx={{ fontSize: 13 }}>
+                            {props.disabled ? props.size[1] : ydir.length}
+                        </Typography>
                     </Divider>
                 </Stack>
             </Stack>
@@ -384,7 +398,7 @@ export default function WidgetSensor(props: SensorParam) {
     }
 
     function displayPanel() {
-        let borderParam = props.disabled ? "2px solid red" : 0 ;
+        let borderParam = props.disabled ? "2px solid red" : 0;
         return (
             <Stack direction="column" spacing={2}>
                 <Stack direction="row" spacing={1}>

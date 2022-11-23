@@ -45,6 +45,7 @@ interface IBankingSchemeUnit {
 }
 
 interface ISteppr {
+    updateSize: any;
     updateX: any;
     updateY: any;
     updateStep: any;
@@ -72,7 +73,6 @@ interface IApplyParam {
 
 const TITLE_FONTSIZE = 15;
 const CONTENT_FONTSIZE = 13;
-
 
 export const VerticalStepper = (props: ISteppr): JSX.Element => {
     const [activeStep, setActiveStep] = React.useState(props.step);
@@ -232,6 +232,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             setXdir(rxData.current.dir);
             setYdir(txData.current.dir);
         }
+        updateSensorSize();
     };
 
     useEffect(() => {
@@ -293,16 +294,27 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         return ret;
     };
 
+    function updateSensorSize() {
+        if (xTrxRef.current === "TX") {
+            props.updateSize([txData.current.count, rxData.current.count]);
+        } else {
+            props.updateSize([rxData.current.count, txData.current.count]);
+        }
+    }
+
     const CheckMappingCountDimension = (data: IAxis) => {
         var ret: IMappingInfo = { status: false, info: "", content: [] };
 
         // check tx/rx dimension compared with value read from fw
         /*
-        if (data.count > data.dim) {
-          ret.info = "count " + data.dir.length + " over dimension " + data.dim;
-          ret.status = true;
-        }
-        */
+                if (data.count > data.dim) {
+                  ret.info = "count " + data.dir.length + " over dimension " + data.dim;
+                  ret.status = true;
+                }
+                */
+
+        findSupportedBK();
+        updateSensorSize();
         return ret;
     };
 
@@ -493,7 +505,9 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             return txMatch + rxMatch;
         });
 
-        if (match.length === 0) return;
+        if (match.length === 0) {
+            return;
+        }
 
         const max = Math.max(...match);
         const index = match.indexOf(max);
@@ -510,10 +524,10 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             count: string;
         };
     }
-    const handleBankingSchemeInit = (bkList: any, config: configType) => {
-        console.log("bkList", bkList);
+    const handleBankingSchemeInit = (config: configType) => {
         console.log("config", config);
 
+        bklist.current = [];
         for (const [key, kvalue] of Object.entries(config)) {
             var trx_list: any = kvalue.list;
 
@@ -595,6 +609,66 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         }
     };
 
+    function findSupportedBK() {
+        if (asic.current === "") return;
+        var banking_field = Object.keys(
+            extensionConst.bankingScheme[asic.current]["Banking"]
+        );
+        var title: any = Object.values(
+            extensionConst.bankingScheme[asic.current]["Banking"]
+        );
+        var pin: any = [];
+
+        title.forEach((value: any) => {
+            pin.push(value.slice(3));
+        });
+
+        var axis_sense: any =
+            extensionConst.bankingScheme[asic.current]["axis-sense"];
+        var row: any = [];
+        var trx_select: any = {};
+        axis_sense.forEach(function (item: any) {
+            var r: any = {};
+            r["id"] = item["id"];
+
+            item["mapping"].forEach(function (bk: any, index: any) {
+                r[banking_field[index]] = bk;
+            });
+
+            //append pin range to TxRx text
+            var trx: any = Object.values(r).slice(1);
+            var tx_count = 0;
+            var rx_count = 0;
+            trx.forEach((element: any, index: any) => {
+                trx[index] = element + pin[index];
+
+                var ret = pin[index].split(/\[|\]|:/);
+                var range1 = parseInt(ret[1], 10);
+                var range2 = parseInt(ret[2], 10);
+                var len = range1 - range2 + 1;
+                if (element === "Tx") {
+                    tx_count = tx_count + len;
+                } else {
+                    rx_count = rx_count + len;
+                }
+            });
+            if (
+                txData.current.count <= tx_count &&
+                rxData.current.count <= rx_count
+            ) {
+                trx_select[r["id"]] = {};
+                trx_select[r["id"]]["list"] = trx;
+                trx_select[r["id"]]["count"] = [tx_count, rx_count];
+                row.push(r);
+            }
+        });
+        setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
+        setBankingListAll(row);
+
+        handleBankingSchemeInit(trx_select);
+        findMatchBankingScheme(txData.current.dir, rxData.current.dir);
+    }
+
     const initializeBK = async () => {
         await Identify()
             .then((partNumber) => {
@@ -613,60 +687,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                     throw `unsupported partnumber ${partNumber}`;
                 }
 
-                var banking_field = Object.keys(
-                    extensionConst.bankingScheme[asic.current]["Banking"]
-                );
-                var title: any = Object.values(
-                    extensionConst.bankingScheme[asic.current]["Banking"]
-                );
-                var pin: any = [];
-
-                title.forEach((value: any) => {
-                    pin.push(value.slice(3));
-                });
-
-                var axis_sense: any =
-                    extensionConst.bankingScheme[asic.current]["axis-sense"];
-                var row: any = [];
-                var trx_select: any = {};
-                axis_sense.forEach(function (item: any) {
-                    var r: any = {};
-                    r["id"] = item["id"];
-
-                    item["mapping"].forEach(function (bk: any, index: any) {
-                        r[banking_field[index]] = bk;
-                    });
-
-                    //append pin range to TxRx text
-                    var trx: any = Object.values(r).slice(1);
-                    var tx_count = 0;
-                    var rx_count = 0;
-                    trx.forEach((element: any, index: any) => {
-                        trx[index] = element + pin[index];
-
-                        var ret = pin[index].split(/\[|\]|:/);
-                        var range1 = parseInt(ret[1], 10);
-                        var range2 = parseInt(ret[2], 10);
-                        var len = range1 - range2 + 1;
-                        if (element === "Tx") {
-                            tx_count = tx_count + len;
-                        } else {
-                            rx_count = rx_count + len;
-                        }
-                    });
-                    trx_select[r["id"]] = {};
-                    trx_select[r["id"]]["list"] = trx;
-                    trx_select[r["id"]]["count"] = [tx_count, rx_count];
-
-                    if (txData.current.count <= tx_count && rxData.current.count <= rx_count)
-                        row.push(r);
-                });
-                setBankingSchemeConfig(JSON.parse(JSON.stringify(trx_select)));
-                setBankingListAll(row);
-
-                handleBankingSchemeInit(row, trx_select);
-
-                findMatchBankingScheme(txData.current.dir, rxData.current.dir);
+                findSupportedBK();
             })
             .catch((err) => {
                 alert(err);
@@ -887,16 +908,16 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         };
 
         /*
-        if (props.step === extensionConst.steps) {
-          //check step finish when DONE
-          param.color = "#inherit";
-          if (stepStatus[index] === 1) {
-            param.bgcolor = "green";
-          } else {
-            param.bgcolor = "red";
-          }
-        }
-        */
+                if (props.step === extensionConst.steps) {
+                  //check step finish when DONE
+                  param.color = "#inherit";
+                  if (stepStatus[index] === 1) {
+                    param.bgcolor = "green";
+                  } else {
+                    param.bgcolor = "red";
+                  }
+                }
+                */
 
         switch (index) {
             case 0:
@@ -1044,7 +1065,8 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             </Typography>
                     </div>
                     <Stack direction="row" spacing={6}>
-                        <Button variant="contained"
+                        <Button
+                            variant="contained"
                             disabled={
                                 toRamDone || txError || rxError || txCountError || rxCountError
                             }
@@ -1052,7 +1074,8 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                         >
                             Write to RAM
             </Button>
-                        <Button variant="contained"
+                        <Button
+                            variant="contained"
                             disabled={txError || rxError || txCountError || rxCountError}
                             onClick={(e) => onApply(e, true)}
                         >
