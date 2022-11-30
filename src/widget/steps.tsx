@@ -833,14 +833,26 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             newStatus[StepIndex.Banking] = 1;
         }
 
+        let tx = new Array(txData.current.dim).fill(0);
+        let rx = new Array(rxData.current.dim).fill(0);
+
+        tx = tx.map((e, index) => {
+            if (index < txData.current.count) return txData.current.dir[index];
+            else return 0;
+        });
+        rx = rx.map((e, index) => {
+            if (index < rxData.current.count) return rxData.current.dir[index];
+            else return 0;
+        });
+
         dataToSend = {
             txCount: txCount,
             rxCount: rxCount,
 
-            imageRxes: rxData.current.dir,
-            imageTxes: txData.current.dir,
-            numColumns: txCount,
-            numRows: rxCount,
+            imageRxes: rx,
+            imageTxes: tx,
+            numColumns: xTrxRef.current === "TX" ? txCount : rxCount,
+            numRows: xTrxRef.current === "TX" ? rxCount : txCount,
 
             txAxis: xTrxRef.current === "TX" ? 0 : 1
         };
