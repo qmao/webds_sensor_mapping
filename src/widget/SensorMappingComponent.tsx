@@ -10,6 +10,8 @@ import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
 import { Controls } from "./mui_extensions/Controls";
 
+import { webdsService } from './local_exports';
+
 export const SensorMappingComponent = (props: any): JSX.Element => {
     const [step, setStep] = useState(0);
     const [status, setStatus] = useState(false);
@@ -31,7 +33,6 @@ export const SensorMappingComponent = (props: any): JSX.Element => {
         return (
             <>
                 <WidgetContent
-                    service={props.service}
                     step={step}
                     updateStep={updateStep}
                     updateStatus={updateStatus}
@@ -81,7 +82,7 @@ export const SensorMappingComponent = (props: any): JSX.Element => {
         );
     }
 
-    const webdsTheme = props.service.ui.getWebDSTheme();
+    const webdsTheme = webdsService.ui.getWebDSTheme();
 
     return (
         <div className="jp-webds-widget-body">

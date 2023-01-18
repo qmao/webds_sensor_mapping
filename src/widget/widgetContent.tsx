@@ -53,7 +53,6 @@ export const WidgetContent = (props: any): JSX.Element => {
             <Stack sx={{ width: "50%" }}>
                 <Stack direction="row" justifyContent="flex-start" alignItems="stretch">
                     <VerticalStepper
-                        service={props.service}
                         step={props.step}
                         updateStep={updateStep}
                         updateX={updateX}

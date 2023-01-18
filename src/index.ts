@@ -25,6 +25,8 @@ namespace Attributes {
   export const rank = 20;
 }
 
+export let webdsService: WebDSService;
+export let settingRegistry: ISettingRegistry;
 
 /**
  * Initialization data for the reprogram extension.
@@ -38,8 +40,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
     launcher: ILauncher,
     restorer: ILayoutRestorer,
     service: WebDSService,
-    settingRegistry: ISettingRegistry) => {
+    settings: ISettingRegistry) => {
     console.log('JupyterLab extension webds_sensor_mapping is activated!');
+
+	webdsService = service;
+	settingRegistry = settings;
 
     let widget: WebDSWidget;
     const { commands, shell } = app;
@@ -51,7 +56,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       icon: extensionSensorMappingIcon,
       execute: () => {
         if (!widget || widget.isDisposed) {
-          let content = new SensorMappingWidget(Attributes.id, service, settingRegistry);
+          let content = new SensorMappingWidget(Attributes.id);
 
           widget = new WebDSWidget<SensorMappingWidget>({ content });
           widget.id = Attributes.id;

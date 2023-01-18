@@ -21,7 +21,7 @@ import {
 import { BankingScheme } from "./bankingScheme";
 import { extensionConst } from "./constant";
 
-import { requestAPI } from "./../handler";
+import { requestAPI, webdsService } from './local_exports';
 
 import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 
@@ -50,7 +50,6 @@ interface ISteppr {
     updateY: any;
     updateStep: any;
     step: any;
-    service: any;
     updateStatus: any;
     updateInitState: any;
 }
@@ -170,8 +169,6 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             console.log(error);
             return Promise.reject(`identify failed: ${error.toString()}`);
         }
-
-        return Promise.resolve(partNumber);
     };
 
     const Get = async (): Promise<string> => {
@@ -564,12 +561,12 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
     const initSensorMapping = async () => {
         try {
             let ret;
-            if (props.service.pinormos !== undefined) {
-                const external = props.service.pinormos.isExternal();
+            if (webdsService.pinormos !== undefined) {
+                const external = webdsService.pinormos.isExternal();
                 if (external) {
-                    ret = await props.service.packrat.cache.addPublicConfig();
+                    ret = await webdsService.packrat.cache.addPublicConfig();
                 } else {
-                    ret = await props.service.packrat.cache.addPrivateConfig();
+                    ret = await webdsService.packrat.cache.addPrivateConfig();
                 }
                 setOpenAlert({
                     state: true,
