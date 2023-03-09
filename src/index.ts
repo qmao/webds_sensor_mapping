@@ -21,7 +21,7 @@ namespace Attributes {
   export const id = "webds_sensor_mapping_widget";
   export const label = "Sensor Mapping";
   export const caption = "Sensor Mapping";
-  export const category = 'Touch - Config Library';
+  export const category = 'Device - Config Library';
   export const rank = 20;
 }
 
