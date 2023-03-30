@@ -21,7 +21,7 @@ import {
 import { BankingScheme } from "./bankingScheme";
 import { extensionConst } from "./constant";
 
-import { requestAPI, webdsService } from './local_exports';
+import { requestAPI, webdsService } from "./local_exports";
 
 import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 
@@ -38,10 +38,17 @@ interface IMappingInfo {
     content: number[];
 }
 
+interface ITrxOption {
+    pin: number[];
+    tx: number;
+    rx: number;
+}
+
 interface IBankingSchemeUnit {
     id: string;
     tx: number[];
     rx: number[];
+    trx: ITrxOption[];
 }
 
 interface ISteppr {
@@ -121,12 +128,15 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         dim: 0,
         bk: [...Array(100).keys()]
     });
+
     const rxData = useRef<IAxis>({
         dir: [],
         count: 0,
         dim: 0,
         bk: [...Array(100).keys()]
     });
+
+    const trxOption = useRef<ITrxOption[]>([]);
 
     useEffect(() => {
         setActiveStep(props.step);
@@ -169,6 +179,8 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             console.log(error);
             return Promise.reject(`identify failed: ${error.toString()}`);
         }
+
+        return Promise.resolve(partNumber);
     };
 
     const Get = async (): Promise<string> => {
@@ -330,6 +342,30 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         return ret;
     };
 
+    const CheckPinOption = () => {
+        var ret: IMappingInfo = { status: false, info: "", content: [] };
+        if (trxOption.current.length) {
+            trxOption.current.forEach((option: any) => {
+                let tx = 0;
+                let rx = 0;
+                option.pin.forEach((num: any) => {
+                    if (txData.current.dir.includes(num)) {
+                        tx = tx + 1;
+                    }
+                    if (rxData.current.dir.includes(num)) {
+                        rx = rx + 1;
+                    }
+                });
+                if (tx > option.tx || rx > option.rx) {
+                    ret.info = "Error pin:" + option.pin.toString();
+                    ret.status = true;
+                }
+            });
+        }
+
+        return ret;
+    };
+
     const CheckMappingRule = (data: IAxis) => {
         var ret = {} as IMappingInfo;
         var singleCheck: any = [];
@@ -366,7 +402,6 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         }
 
         ret = CheckMappingCount(data);
-
         return ret;
     };
 
@@ -377,6 +412,9 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         updateTxDir(ret.content);
 
         ret = CheckMappingRule(txData.current);
+        if (ret.status === false) {
+            ret = CheckPinOption();
+        }
         setTxError(ret.status);
         setTxErrorInfo(ret.info);
     };
@@ -388,6 +426,10 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         updateRxDir(ret.content);
 
         ret = CheckMappingRule(rxData.current);
+        if (ret.status === false) {
+            ret = CheckPinOption();
+        }
+
         setRxError(ret.status);
         setRxErrorInfo(ret.info);
     };
@@ -446,6 +488,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
     const handleTxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         updateTxCount(event.target.value);
         validateTxRx();
+        findSupportedBK();
     };
 
     const validateTxRx = () => {
@@ -461,6 +504,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
     const handleRxCount = (event: React.ChangeEvent<HTMLInputElement>) => {
         updateRxCount(event.target.value);
         validateTxRx();
+        findSupportedBK();
     };
 
     const handleSelectBankingScheme = (select: any) => {
@@ -473,6 +517,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         var unit: any = bklist.current.find((item) => item.id === select);
 
         if (unit) {
+            trxOption.current = unit.trx;
             updateTxDefaultList(unit!.tx);
             updateRxDefaultList(unit!.rx);
             setDefaultSelect(select);
@@ -528,7 +573,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         for (const [key, kvalue] of Object.entries(config)) {
             var trx_list: any = kvalue.list;
 
-            var unit: IBankingSchemeUnit = { id: "", tx: [], rx: [] };
+            var unit: IBankingSchemeUnit = { id: "", tx: [], rx: [], trx: [] };
             unit.id = key;
 
             trx_list.forEach((value: any, index: any) => {
@@ -543,6 +588,17 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                     unit.tx = unit.tx.concat(nlist);
                 } else if (name === "Rx") {
                     unit.rx = unit.rx.concat(nlist);
+                } else {
+                    unit.tx = unit.tx.concat(nlist);
+                    unit.rx = unit.rx.concat(nlist);
+
+                    const nums = name.match(/\d+/g)?.map(Number);
+                    let option: ITrxOption = {
+                        pin: nlist,
+                        tx: nums[0],
+                        rx: nums[1]
+                    };
+                    unit.trx.push(option);
                 }
             });
             bklist.current.push(unit);
@@ -645,8 +701,12 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                 var len = range1 - range2 + 1;
                 if (element === "Tx") {
                     tx_count = tx_count + len;
-                } else {
+                } else if (element === "Rx") {
                     rx_count = rx_count + len;
+                } else {
+                    let nums = element.match(/\d+/g)?.map(Number);
+                    tx_count = tx_count + nums[0];
+                    rx_count = rx_count + nums[1];
                 }
             });
             if (
@@ -835,12 +895,19 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
         tx = tx.map((e, index) => {
             if (index < txData.current.count) return txData.current.dir[index];
+            //equivalent to list[index]
             else return 0;
         });
         rx = rx.map((e, index) => {
             if (index < rxData.current.count) return rxData.current.dir[index];
+            //equivalent to list[index]
             else return 0;
         });
+
+        console.log(txData.current);
+        console.log(rxData.current);
+        console.log(tx);
+        console.log(rx);
 
         dataToSend = {
             txCount: txCount,
