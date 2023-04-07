@@ -1,6 +1,6 @@
 export const extensionConst: any = {
   partNumber: {
-    keys: ["s3913", "s3920"],
+    keys: ["s3913"],
     rio: ["s3908", "s3909"],
     juneau: ["s3910"]
   },
@@ -19,20 +19,16 @@ export const extensionConst: any = {
       },
       "axis-sense": [
         {
-          id: "0",
+          id: "1",
           mapping: ["Tx", "Rx", "Rx", "Rx", "Rx", "Rx", "Rx", "Tx"]
         },
         {
-          id: "1",
+          id: "2",
           mapping: ["Tx", "Tx", "Rx", "Rx", "Rx", "Rx", "Rx", "Tx"]
         },
         {
-          id: "2",
-          mapping: ["Rx", "Rx", "Rx", "Rx", "Tx", "Tx", "Rx", "Rx"]
-        },
-        {
           id: "3",
-          mapping: ["Rx", "Rx", "Rx", "Tx", "Tx", "Tx", "Rx", "Rx"]
+          mapping: ["Rx", "Rx", "Rx", "Rx", "Tx", "Tx", "Rx", "Rx"]
         },
         {
           id: "4",
@@ -50,6 +46,28 @@ export const extensionConst: any = {
       exclusive: [
         ["BK0", "BK4"],
         ["BK5", "BK7"]
+      ],
+      settings: [
+        {
+          condition: ["1", "2", "3", "5", "6:20"],
+          configs: {
+            "tchCbcGlobalConfigCtl1[0].cbcGlobalConn": 1,
+            "tchCbcGlobalConfigCtl1[1].cbcGlobalConn": 0,
+            "tchCbcGlobalConfigCtl1[2].cbcGlobalConn": 0,
+            "tchCbcGlobalConfigCtl1[3].cbcGlobalConn": 1,
+            cbcGlobalConn121: [0, 0, 0, 0, 0, 0]
+          }
+        },
+        {
+          condition: ["4", "6:21"],
+          configs: {
+            "tchCbcGlobalConfigCtl1[0].cbcGlobalConn": 1,
+            "tchCbcGlobalConfigCtl1[1].cbcGlobalConn": 0,
+            "tchCbcGlobalConfigCtl1[2].cbcGlobalConn": 0,
+            "tchCbcGlobalConfigCtl1[3].cbcGlobalConn": 1,
+            cbcGlobalConn121: [0, 0, 0, 0, 1, 0]
+          }
+        }
       ]
     },
     rio: {

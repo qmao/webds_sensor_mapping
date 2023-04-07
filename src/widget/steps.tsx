@@ -344,6 +344,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
     const CheckPinOption = () => {
         var ret: IMappingInfo = { status: false, info: "", content: [] };
+        console.log("QQQQQ OPTION 1", trxOption.current);
         if (trxOption.current.length) {
             trxOption.current.forEach((option: any) => {
                 let tx = 0;
@@ -355,14 +356,17 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                     if (rxData.current.dir.includes(num)) {
                         rx = rx + 1;
                     }
+                    console.log("QQQQQ OPTION 2", num);
                 });
                 if (tx > option.tx || rx > option.rx) {
                     ret.info = "Error pin:" + option.pin.toString();
                     ret.status = true;
+                    console.log("QQQQQ OPTION 3", tx, rx);
                 }
             });
         }
 
+        console.log("QQQQQ OPTION", ret);
         return ret;
     };
 
@@ -854,6 +858,33 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         );
     }
 
+    function applyExtraSettings() {
+        var configs: any = {};
+        var extra: any = extensionConst.bankingScheme[asic.current]["settings"];
+        var select: any = Number(defaultSelect);
+
+        extra.forEach((con: any) => {
+            var found = false;
+            con["condition"].forEach((index: any) => {
+                var split = index.split(":");
+                if (Number(split[0]) === select) {
+                    if (
+                        split.length === 1 ||
+                        txData.current.dir.includes(Number(split[1])) ||
+                        rxData.current.dir.includes(Number(split[1]))
+                    ) {
+                        found = true;
+                    }
+                }
+            });
+            if (found) {
+                Object.assign(configs, con["configs"]);
+            }
+        });
+        console.log(configs);
+        return configs;
+    }
+
     async function onApply(event: any, toFlash: any) {
         var dataToSend = {};
         let newStatus = Array(extensionConst.steps).fill(0);
@@ -920,6 +951,8 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
             txAxis: xTrxRef.current === "TX" ? 0 : 1
         };
+
+        Object.assign(dataToSend, applyExtraSettings());
 
         await WriteToRAM(dataToSend)
             .then((ret) => {
