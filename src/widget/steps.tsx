@@ -119,7 +119,6 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         txAxis: ""
     });
 
-    const asic = useRef("");
     const xTrxRef = useRef("");
     const bklist = useRef<IBankingSchemeUnit[]>([]);
     const txData = useRef<IAxis>({
@@ -134,6 +133,12 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
         count: 0,
         dim: 0,
         bk: [...Array(100).keys()]
+    });
+
+    const asicBankingScheme = useRef({
+        Banking: {},
+        "axis-sense": [],
+        "settings": []
     });
 
     const trxOption = useRef<ITrxOption[]>([]);
@@ -157,6 +162,21 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
             props.updateStatus(false);
         }
     }, [txCountError, rxCountError, txError, rxError, props, dataReady]);
+
+    const GetBanking = async (partNumber: string): Promise<string> => {
+        try {
+            const reply = await requestAPI<any>(
+                "tutor/SensorMapping?config=" + partNumber,
+                {
+                    method: "GET"
+                }
+            );
+            return Promise.resolve(reply);
+        } catch (error) {
+            console.log(error);
+            return Promise.reject(`identify failed: ${error.toString()}`);
+        }
+    };
 
     const Identify = async (): Promise<string> => {
         let partNumber: string = "none";
@@ -344,7 +364,6 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
     const CheckPinOption = () => {
         var ret: IMappingInfo = { status: false, info: "", content: [] };
-        console.log("QQQQQ OPTION 1", trxOption.current);
         if (trxOption.current.length) {
             trxOption.current.forEach((option: any) => {
                 let tx = 0;
@@ -356,17 +375,14 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                     if (rxData.current.dir.includes(num)) {
                         rx = rx + 1;
                     }
-                    console.log("QQQQQ OPTION 2", num);
                 });
                 if (tx > option.tx || rx > option.rx) {
                     ret.info = "Error pin:" + option.pin.toString();
                     ret.status = true;
-                    console.log("QQQQQ OPTION 3", tx, rx);
                 }
             });
         }
 
-        console.log("QQQQQ OPTION", ret);
         return ret;
     };
 
@@ -667,21 +683,16 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
     };
 
     function findSupportedBK() {
-        if (asic.current === "") return;
-        var banking_field = Object.keys(
-            extensionConst.bankingScheme[asic.current]["Banking"]
-        );
-        var title: any = Object.values(
-            extensionConst.bankingScheme[asic.current]["Banking"]
-        );
+        if (asicBankingScheme.current["Banking"] === undefined) return;
+        var banking_field = Object.keys(asicBankingScheme.current["Banking"]);
+        var title: any = Object.values(asicBankingScheme.current["Banking"]);
         var pin: any = [];
 
         title.forEach((value: any) => {
             pin.push(value.slice(3));
         });
 
-        var axis_sense: any =
-            extensionConst.bankingScheme[asic.current]["axis-sense"];
+        var axis_sense: any = asicBankingScheme.current["axis-sense"];
         var row: any = [];
         var trx_select: any = {};
         axis_sense.forEach(function (item: any) {
@@ -733,21 +744,14 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
     const initializeBK = async () => {
         await Identify()
             .then((partNumber) => {
-                console.log(partNumber);
-                for (const [key, value] of Object.entries(extensionConst.partNumber)) {
-                    let v: any = value;
-                    v.find((element: any) => {
-                        if (partNumber.toLowerCase().includes(element)) {
-                            asic.current = key;
-                            return true;
-                        }
-                    });
-                }
-
-                if (asic.current === "") {
-                    throw `unsupported partnumber ${partNumber}`;
-                }
-
+                let pn = partNumber.toLowerCase();
+                const pattern = /^([A-Za-z]+\d+)/;
+                const match = pn.match(pattern);
+                const result = match ? match[1] : "";
+                return GetBanking(result);
+            })
+            .then((banking: any) => {
+                asicBankingScheme.current = banking;
                 findSupportedBK();
             })
             .catch((err) => {
@@ -821,7 +825,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                         expanded={false}
                         onSelect={handleSelectBankingScheme}
                         defaultSelect={defaultSelect}
-                        asic={asic.current}
+                        config={asicBankingScheme.current}
                         bankingListAll={bankingListAll}
                         bankingSchemeConfig={bankingSchemeConfig}
                         count={[parseInt(txCount, 10), parseInt(rxCount, 10)]}
@@ -860,7 +864,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
 
     function applyExtraSettings() {
         var configs: any = {};
-        var extra: any = extensionConst.bankingScheme[asic.current]["settings"];
+        var extra: any = asicBankingScheme.current["settings"];
         var select: any = Number(defaultSelect);
 
         extra.forEach((con: any) => {
@@ -1139,7 +1143,7 @@ export const VerticalStepper = (props: ISteppr): JSX.Element => {
                         expanded={true}
                         onSelect={handleSelectBankingScheme}
                         defaultSelect={defaultSelect}
-                        asic={asic.current}
+                        config={asicBankingScheme.current}
                         bankingListAll={bankingListAll}
                         bankingSchemeConfig={bankingSchemeConfig}
                         count={[parseInt(txCount, 10), parseInt(rxCount, 10)]}
